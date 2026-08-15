@@ -21,8 +21,6 @@
         <item name="colorSurfaceVariant">@color/md_surface_variant</item>
         <item name="colorOnSurfaceVariant">@color/md_on_surface_variant</item>
         <item name="colorOutline">@color/md_outline</item>
-        <item name="colorBackground">@color/md_background</item>
-        <item name="colorOnBackground">@color/md_on_surface</item>
         <item name="android:windowBackground">@color/md_background</item>
         <item name="android:statusBarColor">@color/md_background</item>
         <item name="android:navigationBarColor">@color/md_background</item>
