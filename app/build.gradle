@@ -57,6 +57,7 @@ android {
     sourceSets {
         main {
             java.srcDirs += rootProject.file("vendor/android-change-resolution/app/src/main/java")
+            java.exclude("com/taowen/androidchangeresolution/MainActivity.java")
             assets.srcDirs += "$buildDir/generated/qtiAssets"
         }
     }
