@@ -56,7 +56,7 @@ android {
 
     sourceSets {
         main {
-            java.srcDirs += file("vendor/android-change-resolution/app/src/main/java")
+            java.srcDirs += rootProject.file("vendor/android-change-resolution/app/src/main/java")
             assets.srcDirs += "$buildDir/generated/qtiAssets"
         }
     }
@@ -90,7 +90,7 @@ tasks.withType(JavaCompile) {
 }
 
 // ---- Qualcomm 原生探针：由 android-change-resolution 子模块编译生成 ----
-def qtiProbeSource = file("vendor/android-change-resolution/app/src/main/cpp/qti_display_probe.cpp")
+def qtiProbeSource = rootProject.file("vendor/android-change-resolution/app/src/main/cpp/qti_display_probe.cpp")
 def qtiProbeOutput = layout.buildDirectory.file("generated/qtiAssets/native/arm64-v8a/qti-display-probe")
 
 def ndkClangForHost() {
