@@ -138,7 +138,7 @@ public class State {
 
     public static void unbindUserService() {
         try {
-            if (userService == null) {
+            if (userService != null) {
                 Shizuku.unbindUserService(userServiceArgs, userServiceConnection, true); // 解绑用户服务
             }
         } catch (Exception e) {

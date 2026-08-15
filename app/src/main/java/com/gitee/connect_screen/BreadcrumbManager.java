@@ -11,48 +11,79 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BreadcrumbManager {
-    private LinearLayout breadcrumb;
-    private List<String> navigationPath = new ArrayList<>();
-    private FragmentManager fragmentManager;
-    private FragmentFactory currentFragmentFactory;
+    private final LinearLayout breadcrumb;
+    private final List<String> navigationPath = new ArrayList<>();
+    private final List<FragmentFactory> factoryStack = new ArrayList<>();
+    private final FragmentManager fragmentManager;
 
     public BreadcrumbManager(Context context, FragmentManager fragmentManager, LinearLayout breadcrumb) {
         this.breadcrumb = breadcrumb;
         this.fragmentManager = fragmentManager;
     }
 
+    /**
+     * 压入一个新页面。depth 用自定义地管理，不使用 FragmentManager 的退栈，
+     * 避免 popBackStack() 清空整条栈或刷新时重建到陈旧的页面。
+     */
     public void pushBreadcrumb(String newPath, FragmentFactory fragmentFactory) {
         try {
             if (!newPath.isEmpty() && !navigationPath.contains(newPath)) {
                 navigationPath.add(newPath);
             }
-            updateBreadcrumbView();
-            // 保存当前的 FragmentFactory
-            this.currentFragmentFactory = fragmentFactory;
-            // 使用工厂方法创建 Fragment 并替换
-            Fragment fragment = fragmentFactory.createFragment();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.fragmentContainer, fragment)
-                    .addToBackStack(null)
-                    .commit();
+            factoryStack.add(fragmentFactory);
+            showTop();
         } catch (Throwable e) {
             // ignore
         }
     }
 
+    /**
+     * 回退一层。始终以 factoryStack 栈顶为准重建页面，保证回到正确的上一页。
+     */
     public void popBreadcrumb() {
         try {
-            if (navigationPath.size() > 1) {
+            if (factoryStack.size() > 1) {
                 navigationPath.remove(navigationPath.size() - 1);
+                factoryStack.remove(factoryStack.size() - 1);
+                showTop();
             } else {
-                ((MainActivity) fragmentManager.findFragmentById(R.id.fragmentContainer).getActivity()).finish();
+                Fragment current = fragmentManager.findFragmentById(R.id.fragmentContainer);
+                if (current != null && current.getActivity() != null) {
+                    current.getActivity().finish();
+                }
             }
-            updateBreadcrumbView();
-            // 回退 Fragment
-            fragmentManager.popBackStack();
         } catch (Exception e) {
             // ignore
         }
+    }
+
+    /**
+     * 刷新当前页面（例如 Shizuku 授权、任务完成、从其它界面返回后）。
+     * 无论之前访问过哪个页面，都只重建当前栈顶，避免跳到陈旧的页面。
+     */
+    public void refreshCurrentFragment() {
+        try {
+            if (factoryStack.isEmpty()) {
+                return;
+            }
+            if (State.currentActivity == null || State.currentActivity.get() == null) {
+                return;
+            }
+            showTop();
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    private void showTop() {
+        if (factoryStack.isEmpty()) {
+            return;
+        }
+        Fragment fragment = factoryStack.get(factoryStack.size() - 1).createFragment();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .commit();
+        updateBreadcrumbView();
     }
 
     private void updateBreadcrumbView() {
@@ -69,7 +100,6 @@ public class BreadcrumbManager {
             final int index = i;
             pathView.setClickable(true);
             pathView.setOnClickListener(v -> {
-                // 清空导航路径直到点击的路径项
                 while (navigationPath.size() > index + 1) {
                     popBreadcrumb();
                 }
@@ -82,29 +112,7 @@ public class BreadcrumbManager {
         return breadcrumb;
     }
 
-    // 添加 FragmentFactory 接口
     public interface FragmentFactory {
         Fragment createFragment();
-    }
-
-    // 添加 refreshCurrentFragment 方法
-    public void refreshCurrentFragment() {
-        try {
-            if (State.currentActivity.get() == null) {
-                return;
-            }
-            if (currentFragmentFactory != null) {
-                // 回退一层
-                fragmentManager.popBackStack();
-
-                Fragment fragment = currentFragmentFactory.createFragment();
-                fragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainer, fragment)
-                        .addToBackStack(null)
-                        .commit();
-            }
-        } catch (Exception e) {
-            // ignore
-        }
     }
 }

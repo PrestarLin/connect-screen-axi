@@ -1,59 +1,27 @@
-# 安卓屏连
+# 屏连·副屏 (Connect Screen · Axi)
 
-### 介绍
+基于 [connect-screen](https://github.com/PrestarLin/connect-screen)（1.3.3 分支）扩展的副屏投屏应用。
+UI 参考「副屏·阿西西」的卡片风格，融合副屏启动应用、全屏投屏与显示设置。
 
-安卓屏连让安卓手机通过有线和无线的方式连接屏幕或者电脑，增强投屏时的细节体验。
+## 功能
 
-更多技术文档请见 `doc/` 目录。
+- 首页卡片式入口：单应用副屏 / 全屏投屏 / 显示设置 + 功能宫格（屏幕列表、DisplayLink、无线投屏、触控板、设置、关于）
+- 副屏应用抽屉：4 列图标网格，点击投屏到指定显示器，长按回手机主屏
+- 显示设置：分辨率 / DPI / 刷新率 / 旋转 / 显示模式（Shizuku）
+- 投屏：单应用投屏、桥接、镜像、DisplayLink、无线投屏
+- 触控板、模拟/真实熄屏、悬浮返回键、Shizuku 管理
 
-* 一些手机把usb3硬件阉割成了usb2（比如红米），安卓屏连可以通过增购displaylink扩展坞弥补usb2无法满屏投屏的缺憾。
-* 一些手机操作系统软件上阉割了安卓原生的桌面模式（比如小米14），安卓屏连可以通过adb权限把双屏异显的体验做好。
-* 很多手机都有投屏到电脑的配套软件，但是很难投屏到竞争对手的设备上，也只能用手机长条形的宽高比镜像模式投屏。
+## 构建
 
-安卓屏连把手机厂商阉割掉的接屏幕的功能想办法加回来。
+依赖 Android SDK（compileSdk 34、build-tools 36.1.0）、Gradle Wrapper 8.7、JDK 17。
 
-### 自媒体账号
+```sh
+./gradlew :app:assembleDebug
+```
 
-* 用户手册：[https://connect-screen.com/](https://connect-screen.com/)
-* 小红书：[安卓屏连](https://www.xiaohongshu.com/user/profile/602cc4c0000000000100be64)
-* b站：[安卓屏连](https://space.bilibili.com/494726825)
-* 抖音：[安卓屏连](https://www.douyin.com/user/MS4wLjABAAAAolJRQWuFI6KZwaBUvPfzDejygnorK2K-CY_6b1OuWQM)
-* Youtube: [安卓屏连](https://www.youtube.com/@connect-screen)
+CI 在推送到 `main` 时自动构建并发布到 GitHub Releases。
 
-### 安装方式
+## 说明
 
-通过 QQ 加入群聊 577902537 获取 android apk 安装包
-
-### 本应用不是 DisplayLink 官方应用
-
-本应用使用了DisplayLink®的驱动程序(.so文件)用于支持DisplayLink®设备的连接功能。DisplayLink®是Synaptics Incorporated的注册商标。我们仅将其驱动程序用于实现与DisplayLink®设备的兼容性，未对驱动程序进行任何修改。
-
-- DisplayLink®驱动程序的所有权利均属于Synaptics Incorporated
-- 本应用仅将DisplayLink®驱动用于其预期用途，即支持DisplayLink®设备的连接
-- 用户在使用DisplayLink®相关功能时应遵守Synaptics Incorporated的相关许可条款
-- 本应用与Synaptics Incorporated没有任何官方关联，不代表或暗示与Synaptics Incorporated存在任何合作关系
-
-如有任何与DisplayLink®相关的法律问题，请直接联系Synaptics Incorporated：www.synaptics.com
-
-### 参考资料
-
-* http://nightmare.press/
-* https://github.com/eiyooooo/Easycontrol
-* https://github.com/eiyooooo/Easycontrol_For_Car
-* https://github.com/timschneeb/awesome-shizuku
-* https://github.com/Genymobile/scrcpy
-* https://github.com/AkiChase/scrcpy-mask/blob/master/README-zh.md
-* https://github.com/dkrivoruchko/ScreenStream
-* https://github.com/sdex/ActivityManager
-* https://github.com/farmerbb/SecondScreen
-* https://github.com/jiuqianyuan/gkd/blob/main/app/src/main/kotlin/li/songe/gkd/shizuku/UserService.kt
-* https://github.com/Live-Block/Flyme-FreeForm/blob/flyme/app/src/main/java/com/sunshine/freeform/ui/freeform/FreeformService.kt
-* https://github.com/MagicianGuo/Android-SettingTools
-* https://github.com/jiesou/Android-Screener
-* https://www.reddit.com/r/AndroidQuestions/comments/xra3hu/is_there_a_technical_reason_there_are_no_miracast/
-* https://www.cnblogs.com/zuojie
-* https://github.com/itzuo/SceenLive/blob/master/app/src/main/java/com/zxj/screenlive/VideoCodec.java
-* https://github.com/WuDi-ZhanShen/AndroidUHidPureJava
-* https://github.com/WuDi-ZhanShen/ScreenOff
-* https://blog.csdn.net/liaosongmao1/article/details/136129774
-* https://github.com/keymapperorg/KeyMapper/
+- 已移除 termux-x11 依赖，构建自包含。
+- 本应用使用 DisplayLink® 驱动（.so）仅用于兼容 DisplayLink 设备，与 Synaptics 无官方关联。
