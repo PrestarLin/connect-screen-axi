@@ -1,0 +1,4 @@
+[submodule "vendor/android-change-resolution"]
+	path = vendor/android-change-resolution
+	url = https://github.com/PrestarLin/android-change-resolution.git
+	branch = main
