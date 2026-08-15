@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/md_background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,17 +13,18 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_marginLeft="16dp"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/switchModeButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:text="切换模式"
-                android:textSize="14sp"/>
+                android:textSize="14sp" />
 
             <Spinner
                 android:id="@+id/modeSpinner"
@@ -34,56 +37,59 @@
             android:id="@+id/touchpad_area"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
             android:layout_margin="16dp"
-            android:padding="32dp"
+            android:layout_weight="1"
             android:background="@drawable/touchpad_background"
             android:clickable="true"
             android:focusable="true"
-            android:textSize="16sp"
-            android:textColor="#666666"
-            android:lineSpacingExtra="8dp"/>
+            android:lineSpacingExtra="8dp"
+            android:padding="32dp"
+            android:textColor="@color/md_on_surface_variant"
+            android:textSize="16sp" />
 
         <!-- 底部功能按钮区域 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:paddingTop="16dp"
             android:paddingBottom="0dp"
-            android:orientation="horizontal"
             android:weightSum="3">
 
             <ImageButton
                 android:id="@+id/backButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
                 android:layout_margin="8dp"
-                android:src="@drawable/ic_back"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/back_button"
-                android:background="?attr/selectableItemBackgroundBorderless" />
+                android:src="@drawable/ic_back"
+                app:tint="@color/md_on_surface" />
 
             <ImageButton
                 android:id="@+id/homeButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
                 android:layout_margin="8dp"
-                android:src="@drawable/ic_home"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/home_button"
-                android:background="?attr/selectableItemBackgroundBorderless" />
+                android:src="@drawable/ic_home"
+                app:tint="@color/md_on_surface" />
 
             <ImageButton
                 android:id="@+id/goDarkButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
                 android:layout_margin="8dp"
-                android:src="@drawable/ic_dark_mode"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/go_dark_button"
-                android:background="?attr/selectableItemBackgroundBorderless" />
+                android:src="@drawable/ic_dark_mode"
+                app:tint="@color/md_on_surface" />
 
         </LinearLayout>
     </LinearLayout>

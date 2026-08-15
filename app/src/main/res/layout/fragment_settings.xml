@@ -1,155 +1,277 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp">
 
-    <CheckBox
-        android:id="@+id/cbDisableUsbAudio"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="停用外接屏幕的声音输出"
-        android:layout_marginBottom="8dp"/>
-        
-    <CheckBox
-        android:id="@+id/cbForceDesktop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="强制桌面模式（安卓14以及以下的系统绑定鼠标到外接显示器，可能需重启）"
-        android:layout_marginBottom="8dp"/>
-
-    <CheckBox
-        android:id="@+id/cbForceResizable"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="强制将 activity 设为可调整大小"
-        android:layout_marginBottom="8dp"/>
-
-    <CheckBox
-        android:id="@+id/cbEnableFreeform"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="启用可自由调整的窗口"
-        android:layout_marginBottom="8dp"/>
-
-    <CheckBox
-        android:id="@+id/cbEnableNonResizable"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="允许以多窗口模式显示不可调整大小的应用"
-        android:layout_marginBottom="8dp"/>
-
-    <CheckBox
-        android:id="@+id/cbDisableScreenShareProtection"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="停用屏幕共享防护"
-        android:layout_marginBottom="8dp"/>
-
-    <CheckBox
-        android:id="@+id/cbUseRealScreenOff"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="使用真实熄屏代替模拟熄屏（需要使用音量键唤醒）"
-        android:layout_marginBottom="8dp"/>
-
-    <CheckBox
-        android:id="@+id/cbAllowForceScreenOff"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="允许在未投屏时强行熄屏（风险：可能影响操作）"
-        android:layout_marginBottom="8dp"/>
-
-    <CheckBox
-        android:id="@+id/cbMouseMiddleButtonSwitch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="鼠标中键切换屏幕（循环切换鼠标所在屏幕）"
-        android:layout_marginBottom="8dp"/>
-
-    <CheckBox
-        android:id="@+id/cbStayOnWhilePlugged"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="充电时屏幕不休眠"
-        android:layout_marginBottom="8dp"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="绑定屏幕自动熄屏："
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"/>
-
-    <Spinner
-        android:id="@+id/spinnerAutoScreenOffDisplay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"/>
-
-    <CheckBox
-        android:id="@+id/cbAutoScreenOffOnAppOpen"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="打开应用时自动熄屏（如果有绑定的屏幕）"
-        android:layout_marginBottom="8dp"/>
-
     <LinearLayout
-        android:id="@+id/externalDeviceContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Spinner
-                android:id="@+id/spinnerDisplays"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
-
-            <Button
-                android:id="@+id/btnBind"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="绑定输入设备"
-                android:layout_marginStart="8dp"/>
-        </LinearLayout>
-
+        <!-- 投屏与窗口 -->
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="外接输入设备："
-            android:textStyle="bold"
-            android:textSize="16sp"/>
+            android:layout_marginBottom="8dp"
+            android:text="投屏与窗口"
+            android:textColor="@color/md_on_surface_variant"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvExternalDevices"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/md_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/md_outline"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <CheckBox
+                    android:id="@+id/cbDisableUsbAudio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="停用外接屏幕的声音输出"
+                    android:textColor="@color/md_on_surface" />
+
+                <CheckBox
+                    android:id="@+id/cbForceDesktop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="强制桌面模式（安卓14以及以下的系统绑定鼠标到外接显示器，可能需重启）"
+                    android:textColor="@color/md_on_surface" />
+
+                <CheckBox
+                    android:id="@+id/cbForceResizable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="强制将 activity 设为可调整大小"
+                    android:textColor="@color/md_on_surface" />
+
+                <CheckBox
+                    android:id="@+id/cbEnableFreeform"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="启用可自由调整的窗口"
+                    android:textColor="@color/md_on_surface" />
+
+                <CheckBox
+                    android:id="@+id/cbEnableNonResizable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="允许以多窗口模式显示不可调整大小的应用"
+                    android:textColor="@color/md_on_surface" />
+
+                <CheckBox
+                    android:id="@+id/cbDisableScreenShareProtection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="停用屏幕共享防护"
+                    android:textColor="@color/md_on_surface" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 熄屏 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="熄屏"
+            android:textColor="@color/md_on_surface_variant"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/md_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/md_outline"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <CheckBox
+                    android:id="@+id/cbUseRealScreenOff"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="使用真实熄屏代替模拟熄屏（需要使用音量键唤醒）"
+                    android:textColor="@color/md_on_surface" />
+
+                <CheckBox
+                    android:id="@+id/cbAllowForceScreenOff"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="允许在未投屏时强行熄屏（风险：可能影响操作）"
+                    android:textColor="@color/md_on_surface" />
+
+                <CheckBox
+                    android:id="@+id/cbAutoScreenOffOnAppOpen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="打开应用时自动熄屏（如果有绑定的屏幕）"
+                    android:textColor="@color/md_on_surface" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="绑定屏幕自动熄屏："
+                    android:textColor="@color/md_on_surface"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/spinnerAutoScreenOffDisplay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 其它 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="其它"
+            android:textColor="@color/md_on_surface_variant"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/md_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/md_outline"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <CheckBox
+                    android:id="@+id/cbMouseMiddleButtonSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="鼠标中键切换屏幕（循环切换鼠标所在屏幕）"
+                    android:textColor="@color/md_on_surface" />
+
+                <CheckBox
+                    android:id="@+id/cbStayOnWhilePlugged"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="充电时屏幕不休眠"
+                    android:textColor="@color/md_on_surface" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 输入设备 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="输入设备"
+            android:textColor="@color/md_on_surface_variant"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/md_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/md_outline"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:id="@+id/externalDeviceContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <Spinner
+                            android:id="@+id/spinnerDisplays"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+
+                        <Button
+                            android:id="@+id/btnBind"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="绑定输入设备" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="外接输入设备："
+                        android:textColor="@color/md_on_surface"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvExternalDevices"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="内置输入设备："
+                    android:textColor="@color/md_on_surface"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvInternalDevices"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="内置输入设备："
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:visibility="gone" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvInternalDevices"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:visibility="gone" />
-</LinearLayout> 
+</ScrollView>

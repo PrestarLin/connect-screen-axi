@@ -3,13 +3,20 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="20dp">
 
     <EditText
         android:id="@+id/dpi_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/card_bg"
+        android:hint="输入 DPI 值"
         android:inputType="number"
-        android:hint="输入DPI值"/>
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/md_on_surface"
+        android:textColorHint="@color/md_on_surface_variant" />
 
-</LinearLayout> 
+</LinearLayout>

@@ -2,6 +2,7 @@ package com.gitee.connect_screen;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
@@ -35,6 +36,11 @@ import com.gitee.connect_screen.dialog.ResolutionDialog;
 import com.gitee.connect_screen.dialog.BridgeDialog;
 import com.gitee.connect_screen.dialog.DpiDialog;
 import com.gitee.connect_screen.shizuku.WindowingMode;
+
+import com.taowen.androidchangeresolution.QtiModeOverride;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DisplayDetailFragment extends Fragment {
     private static final String ARG_DISPLAY_ID = "display_id";
@@ -92,7 +98,9 @@ public class DisplayDetailFragment extends Fragment {
         display = displayManager.getDisplay(displayId);
 
         if(display == null) {
-            State.currentActivity.get().onBackPressed();
+            if (State.breadcrumbManager != null) {
+                State.breadcrumbManager.popBreadcrumb();
+            }
             return view;
         }
 
@@ -147,6 +155,19 @@ public class DisplayDetailFragment extends Fragment {
         launchButton.setOnClickListener(v -> {
             LauncherActivity.start(getContext(), displayId);
         });
+
+        Button qtiForceModeButton = view.findViewById(R.id.btn_qti_force_mode);
+        Button qtiDiagButton = view.findViewById(R.id.btn_qti_diag);
+        if (displayId != Display.DEFAULT_DISPLAY) {
+            qtiForceModeButton.setVisibility(View.VISIBLE);
+            qtiDiagButton.setVisibility(View.VISIBLE);
+        } else {
+            qtiForceModeButton.setVisibility(View.GONE);
+            qtiDiagButton.setVisibility(View.GONE);
+        }
+        qtiForceModeButton.setOnClickListener(v -> showQtiForceModeDialog());
+        qtiDiagButton.setOnClickListener(v ->
+                State.breadcrumbManager.pushBreadcrumb("高通诊断", DiagnosticsFragment::new));
 
         Button touchpadButton = view.findViewById(R.id.touchpad_button);
         if (displayId != Display.DEFAULT_DISPLAY) {
@@ -478,6 +499,80 @@ private void showBridgeDialog() {
         Toast.makeText(getContext(), "安卓15可以直接修改旋转角度，无需桥接", Toast.LENGTH_SHORT).show();
     }
     BridgeDialog.show(getContext(), display, displayId);
+}
+
+private void showQtiForceModeDialog() {
+    if (display == null || getContext() == null) {
+        return;
+    }
+    Display.Mode[] modes = display.getSupportedModes();
+    if (modes == null || modes.length == 0) {
+        showToast("此显示器没有可用的显示模式");
+        return;
+    }
+    String[] items = new String[modes.length];
+    for (int i = 0; i < modes.length; i++) {
+        Display.Mode mode = modes[i];
+        items[i] = "#" + mode.getModeId() + "  " + mode.getPhysicalWidth()
+                + "x" + mode.getPhysicalHeight() + " @ "
+                + Math.round(mode.getRefreshRate()) + " Hz";
+    }
+    new androidx.appcompat.app.AlertDialog.Builder(getContext())
+            .setTitle("选择强制模式（高通）")
+            .setItems(items, (dialog, which) -> applyQtiForceMode(modes[which]))
+            .setNegativeButton("取消", null)
+            .show();
+}
+
+private void applyQtiForceMode(Display.Mode mode) {
+    if (getContext() == null) {
+        return;
+    }
+    int modeId = QtiOverride.authMode(requireContext());
+    String authName = QtiOverride.authModeName(modeId);
+    showToast("正在通过 " + authName + " 设置 " + QtiModeOverride.modeSpec(mode) + " …");
+    State.log("高通强制模式: " + QtiModeOverride.formatMode(mode) + " 授权=" + authName);
+
+    final Context ctx = requireContext();
+    final Activity activity = requireActivity();
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    executor.execute(() -> {
+        try {
+            final QtiModeOverride.Runner runner = QtiOverride.runnerFor(ctx);
+            final QtiModeOverride.ApplyResult result =
+                    QtiModeOverride.apply(ctx, display, mode, runner);
+            String current = QtiModeOverride.currentOverride(ctx, runner);
+            boolean ok = result.propertyValue.equals(current);
+            activity.runOnUiThread(() -> {
+                if (ok) {
+                    new androidx.appcompat.app.AlertDialog.Builder(ctx)
+                            .setTitle(result.setActiveOk ? "模式已切换" : "模式已配置")
+                            .setMessage(result.setActiveOk
+                                    ? "已切换至 " + QtiModeOverride.modeSpec(mode) + "\n\n" + result.diagnosticsSummary
+                                    : "已设置 " + QtiModeOverride.QUALCOMM_MODE_OVERRIDE_PROP
+                                            + "=" + result.propertyValue + "\n\n"
+                                            + result.diagnosticsSummary + "\n\n请重插 Type-C，让高通 composer 以此模式初始化外接显示器。")
+                            .setPositiveButton("知道了", null)
+                            .show();
+                } else {
+                    showToast("设置失败，当前属性值: " + current);
+                }
+            });
+        } catch (Exception e) {
+            String msg = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+            activity.runOnUiThread(() -> {
+                showToast("高通强制模式失败");
+                State.log("高通强制模式失败: " + msg);
+                new androidx.appcompat.app.AlertDialog.Builder(ctx)
+                        .setTitle("高通强制模式失败")
+                        .setMessage(msg)
+                        .setPositiveButton("知道了", null)
+                        .show();
+            });
+        } finally {
+            executor.shutdown();
+        }
+    });
 }
 
 private void updateFloatingBackButtonText(boolean isEnabled) {

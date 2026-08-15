@@ -41,4 +41,9 @@
     <color name="md_on_error">#FF690005</color>
     <color name="md_error_container">#FF93000A</color>
     <color name="md_on_error_container">#FFFFDAD6</color>
+
+    <!-- android-change-resolution 子模块 MainActivity 编译所需 -->
+    <color name="app_background">#FF0E1116</color>
+    <color name="panel_background">#FF1E2433</color>
+    <color name="panel_border">#FF333C52</color>
 </resources>

@@ -16,6 +16,7 @@ public class BreadcrumbManager {
     private final List<FragmentFactory> factoryStack = new ArrayList<>();
     private final FragmentManager fragmentManager;
     private androidx.appcompat.widget.Toolbar toolbar;
+    private Runnable onNavigationChanged;
 
     public BreadcrumbManager(Context context, FragmentManager fragmentManager, LinearLayout breadcrumb) {
         this.breadcrumb = breadcrumb;
@@ -25,6 +26,21 @@ public class BreadcrumbManager {
     public void setToolbar(androidx.appcompat.widget.Toolbar toolbar) {
         this.toolbar = toolbar;
         toolbar.setNavigationOnClickListener(v -> popBreadcrumb());
+    }
+
+    /** 是否有下级页面（用于预测性返回回调开关）。 */
+    public boolean hasBackNavigation() {
+        return factoryStack.size() > 1;
+    }
+
+    public void setOnNavigationChangedListener(Runnable listener) {
+        this.onNavigationChanged = listener;
+    }
+
+    private void notifyNavigationChanged() {
+        if (onNavigationChanged != null) {
+            onNavigationChanged.run();
+        }
     }
 
     /**
@@ -90,6 +106,7 @@ public class BreadcrumbManager {
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
         updateBreadcrumbView();
+        notifyNavigationChanged();
     }
 
     private void updateBreadcrumbView() {

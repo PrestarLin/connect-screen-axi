@@ -53,6 +53,13 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+
+    sourceSets {
+        main {
+            java.srcDirs += file("vendor/android-change-resolution/app/src/main/java")
+            assets.srcDirs += "$buildDir/generated/qtiAssets"
+        }
+    }
 }
 
 dependencies {
@@ -80,4 +87,65 @@ dependencies {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+// ---- Qualcomm 原生探针：由 android-change-resolution 子模块编译生成 ----
+def qtiProbeSource = file("vendor/android-change-resolution/app/src/main/cpp/qti_display_probe.cpp")
+def qtiProbeOutput = layout.buildDirectory.file("generated/qtiAssets/native/arm64-v8a/qti-display-probe")
+
+def ndkClangForHost() {
+    def sdkDir = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT")
+    if (sdkDir == null || sdkDir.trim().isEmpty()) return null
+    def ndkRoot = file("${sdkDir}/ndk")
+    if (!ndkRoot.exists()) return null
+    def ndkDir = ndkRoot.listFiles()
+            .findAll { it.isDirectory() }
+            .sort { a, b -> b.name <=> a.name }
+            .first()
+    def prebuiltRoot = file("${ndkDir}/toolchains/llvm/prebuilt")
+    if (!prebuiltRoot.exists()) return null
+
+    def os = System.getProperty("os.name").toLowerCase(Locale.ROOT)
+    def osDir = os.contains("win") ? "windows" : os.contains("mac") ? "darwin" : "linux"
+    def arch = System.getProperty("os.arch").toLowerCase(Locale.ROOT)
+    def archDir = (arch.contains("aarch64") || arch.contains("arm64")) ? "aarch64" : "x86_64"
+    def hostDir = "${osDir}-${archDir}"
+
+    def candidates = prebuiltRoot.listFiles()
+            .findAll { it.isDirectory() && it.name == hostDir && new File(it, "bin/aarch64-linux-android26-clang++").exists() }
+    if (!candidates) return null
+    return new File(candidates.first(), "bin/aarch64-linux-android26-clang++")
+}
+
+tasks.register("buildQtiDisplayProbe", Exec) {
+    inputs.file(qtiProbeSource)
+    outputs.file(qtiProbeOutput)
+    onlyIf { ndkClangForHost() != null }
+
+    doFirst {
+        def clang = ndkClangForHost()
+        if (clang == null) {
+            logger.warn("qti-display-probe: 未找到可用的 NDK 主机工具链，跳过原生探针。")
+            return
+        }
+        qtiProbeOutput.get().asFile.parentFile.mkdirs()
+        commandLine clang.absolutePath,
+                "-std=c++17",
+                "-Wall",
+                "-Wextra",
+                "-Werror",
+                "-Os",
+                "-s",
+                "-fPIE",
+                "-pie",
+                "-static-libstdc++",
+                qtiProbeSource.absolutePath,
+                "-ldl",
+                "-o",
+                qtiProbeOutput.get().asFile.absolutePath
+    }
+}
+
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
+    dependsOn("buildQtiDisplayProbe")
 } 

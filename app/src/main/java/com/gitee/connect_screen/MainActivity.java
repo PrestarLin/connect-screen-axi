@@ -131,6 +131,19 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         breadcrumbManager.setToolbar(toolbar);
         breadcrumbManager.pushBreadcrumb("首页", () -> new HomeFragment());
 
+        // 预测性返回：有下级页面时拦截并弹栈，根层交给系统（有返回动画）
+        androidx.activity.OnBackPressedCallback backCallback =
+                new androidx.activity.OnBackPressedCallback(false) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        breadcrumbManager.popBreadcrumb();
+                    }
+                };
+        getOnBackPressedDispatcher().addCallback(this, backCallback);
+        Runnable syncBack = () -> backCallback.setEnabled(breadcrumbManager.hasBackNavigation());
+        breadcrumbManager.setOnNavigationChangedListener(syncBack);
+        syncBack.run();
+
         // 设置 State.currentActivity 为当前的 MainActivity 实例
         State.currentActivity = new WeakReference<>(this);
 
@@ -282,11 +295,6 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         return false;
     }
 
-    @Override
-    public void onBackPressed() {
-        breadcrumbManager.popBreadcrumb();
-    }
-    
     // 更新日志列表的方法
     public void updateLogs() {
         if (logAdapter != null) {

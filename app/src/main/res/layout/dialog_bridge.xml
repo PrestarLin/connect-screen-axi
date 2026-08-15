@@ -3,34 +3,38 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="20dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:lineSpacingExtra="4dp"
         android:text="桥接功能会创建一个虚拟显示器来做为应用投屏的宿主，从而使得我们可以控制旋转以及在物理显示器断开时仍然可以保持后台应用的存活。"
-        android:textSize="14sp"
-        android:lineSpacingExtra="4dp"/>
+        android:textColor="@color/md_on_surface_variant"
+        android:textSize="14sp" />
 
     <CheckBox
         android:id="@+id/rotatesWithContentCheckbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="跟随内容旋转"
-        android:layout_marginTop="16dp"/>
+        android:textColor="@color/md_on_surface" />
 
     <CheckBox
         android:id="@+id/skipMediaProjectionPermissionCheckbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="跳过询问媒体投影权限"
-        android:layout_marginTop="16dp"/>
+        android:textColor="@color/md_on_surface" />
 
     <CheckBox
         android:id="@+id/autoBridgeCheckbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="下次自动开始桥接"
-        android:layout_marginTop="16dp"/>
+        android:textColor="@color/md_on_surface" />
 
-</LinearLayout> 
+</LinearLayout>
