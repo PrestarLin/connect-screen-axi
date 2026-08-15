@@ -50,10 +50,11 @@ public class LauncherActivity extends AppCompatActivity {
         
         // 获取目标显示器ID
         int displayId = getIntent().getIntExtra(EXTRA_TARGET_DISPLAY_ID, Display.DEFAULT_DISPLAY);
-        
-        getSupportActionBar().hide();
 
         setContentView(R.layout.activity_launcher);
+
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         DisplayManager displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
         Display display = displayManager.getDisplay(displayId);
@@ -61,6 +62,7 @@ public class LauncherActivity extends AppCompatActivity {
             finish();
             return;
         }
+        toolbar.setTitle(String.format("副屏 %s · %dx%d", display.getName(), display.getWidth(), display.getHeight()));
         floatingButtonToggle = findViewById(R.id.floating_button_toggle);
         if (displayId != Display.DEFAULT_DISPLAY) {
             floatingButtonToggle.setVisibility(View.VISIBLE);
@@ -91,15 +93,6 @@ public class LauncherActivity extends AppCompatActivity {
         
         RecyclerView recyclerView = findViewById(R.id.app_list);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 4));
-
-        // 标题栏显示目标显示器名称
-        TextView displayTitle = findViewById(R.id.display_title);
-        if (display != null) {
-            displayTitle.setText(String.format("副屏 %s · %dx%d （点击投屏，长按回手机）",
-                    display.getName(), display.getWidth(), display.getHeight()));
-        } else {
-            displayTitle.setText("副屏应用");
-        }
         
         // 获取已安装的应用并过滤系统应用
         PackageManager pm = getPackageManager();

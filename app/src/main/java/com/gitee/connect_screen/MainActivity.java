@@ -20,6 +20,7 @@ import android.os.UserHandle;
 import android.os.UserHandleHidden;
 import android.permission.IPermissionManager;
 import android.view.Display;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
@@ -103,8 +104,31 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
 
         setContentView(R.layout.activity_main);
 
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.app_name);
+        toolbar.inflateMenu(R.menu.menu_main);
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_toggle_log) {
+                logRecyclerView = findViewById(R.id.logRecyclerView);
+                boolean show = logRecyclerView.getVisibility() != View.VISIBLE;
+                logRecyclerView.setVisibility(show ? View.VISIBLE : View.GONE);
+                if (show) {
+                    if (logAdapter == null) {
+                        logAdapter = new LogAdapter(State.logs);
+                        logRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+                        logRecyclerView.setAdapter(logAdapter);
+                    }
+                    logAdapter.notifyDataSetChanged();
+                    logRecyclerView.scrollToPosition(logAdapter.getItemCount() - 1);
+                }
+                return true;
+            }
+            return false;
+        });
+
         breadcrumbManager = new BreadcrumbManager(this, getSupportFragmentManager(), findViewById(R.id.breadcrumb));
         State.breadcrumbManager = breadcrumbManager;
+        breadcrumbManager.setToolbar(toolbar);
         breadcrumbManager.pushBreadcrumb("首页", () -> new HomeFragment());
 
         // 设置 State.currentActivity 为当前的 MainActivity 实例
@@ -112,9 +136,6 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
 
         // 初始化日志列表
         logRecyclerView = findViewById(R.id.logRecyclerView);
-        logAdapter = new LogAdapter(State.logs);
-        logRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        logRecyclerView.setAdapter(logAdapter);
 
         // 获取启动 Intent 并打印其 Action 到日志
         Intent intent = getIntent();

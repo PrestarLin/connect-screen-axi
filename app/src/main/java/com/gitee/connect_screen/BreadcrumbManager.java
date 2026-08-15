@@ -15,10 +15,16 @@ public class BreadcrumbManager {
     private final List<String> navigationPath = new ArrayList<>();
     private final List<FragmentFactory> factoryStack = new ArrayList<>();
     private final FragmentManager fragmentManager;
+    private androidx.appcompat.widget.Toolbar toolbar;
 
     public BreadcrumbManager(Context context, FragmentManager fragmentManager, LinearLayout breadcrumb) {
         this.breadcrumb = breadcrumb;
         this.fragmentManager = fragmentManager;
+    }
+
+    public void setToolbar(androidx.appcompat.widget.Toolbar toolbar) {
+        this.toolbar = toolbar;
+        toolbar.setNavigationOnClickListener(v -> popBreadcrumb());
     }
 
     /**
@@ -87,6 +93,13 @@ public class BreadcrumbManager {
     }
 
     private void updateBreadcrumbView() {
+        if (toolbar != null) {
+            boolean hasBack = navigationPath.size() > 1;
+            toolbar.setNavigationIcon(hasBack ? R.drawable.ic_back : null);
+            String last = navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
+            toolbar.setTitle("首页".equals(last) ? "屏连·副屏" : last);
+        }
+
         breadcrumb.removeAllViews();
 
         for (int i = 0; i < navigationPath.size(); i++) {

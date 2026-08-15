@@ -1,12 +1,8 @@
 package com.gitee.connect_screen;
 
-import android.app.ActivityOptions;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Paint;
-import android.net.Uri;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,20 +25,16 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        TextView shizukuStatusPrefix = view.findViewById(R.id.shizukuStatusPrefix);
-        shizukuStatusPrefix.setPaintFlags(shizukuStatusPrefix.getPaintFlags());
-
-        // 添加授权按钮
         Button shizukuPermissionBtn = view.findViewById(R.id.shizukuPermissionBtn);
         shizukuPermissionBtn.setOnClickListener(v -> {
             State.startNewJob(new AcquireShizuku());
         });
 
-        // 更新Shizuku状态
         TextView shizukuStatus = view.findViewById(R.id.shizukuStatus);
-        updateShizukuStatus(shizukuStatus, shizukuPermissionBtn);
+        View shizukuDot = view.findViewById(R.id.shizukuDot);
+        updateShizukuStatus(shizukuStatus, shizukuDot, shizukuPermissionBtn);
 
-        // 三大主功能：都先进入屏幕列表，选择外接显示器
+        // 三大主功能：进入屏幕列表选择外接显示器
         view.findViewById(R.id.cardSingleApp).setOnClickListener(v ->
                 State.breadcrumbManager.pushBreadcrumb("屏幕", () -> new DisplayListFragment()));
 
@@ -109,20 +101,30 @@ public class HomeFragment extends Fragment {
             .show();
     }
 
-    private void updateShizukuStatus(TextView statusView, Button permissionBtn) {
+    private void updateShizukuStatus(TextView statusView, View dot, Button permissionBtn) {
         boolean started = ShizukuUtils.hasShizukuStarted();
         boolean hasPermission = ShizukuUtils.hasPermission();
 
+        int dotColor;
         String status;
         if (!started) {
             status = "未启动";
+            dotColor = 0xFFF4511E;
             permissionBtn.setVisibility(View.GONE);
         } else if (!hasPermission) {
             status = "已启动，未授权";
+            dotColor = 0xFFFFC107;
             permissionBtn.setVisibility(View.VISIBLE);
         } else {
             status = "已授权";
+            dotColor = 0xFF2BD9A9;
             permissionBtn.setVisibility(View.GONE);
+        }
+
+        try {
+            GradientDrawable d = (GradientDrawable) dot.getBackground();
+            d.setColor(dotColor);
+        } catch (Throwable ignored) {
         }
 
         statusView.setText(status);
