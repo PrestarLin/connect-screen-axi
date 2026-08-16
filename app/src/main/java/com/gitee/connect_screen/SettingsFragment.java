@@ -84,6 +84,7 @@ public class SettingsFragment extends Fragment {
         externalDeviceContainer = view.findViewById(R.id.externalDeviceContainer);
 
         setupTheme();
+        setupLogDisplay();
         initializeDisplaySpinner();
         initializeAutoScreenOffDisplaySpinner();
         setupBindButton();
@@ -152,6 +153,30 @@ public class SettingsFragment extends Fragment {
                 return "深色";
             default:
                 return "跟随系统";
+        }
+    }
+
+    private void setupLogDisplay() {
+        RadioGroup logGroup = viewRef.findViewById(R.id.logDisplayGroup);
+        if (logGroup == null) {
+            return;
+        }
+        int mode = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
+                .getInt("log_display_mode", 0);
+        checkLogMode(mode);
+        logGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int val = checkedId == R.id.logFull ? 1 : 0;
+            requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
+                    .edit().putInt("log_display_mode", val).apply();
+            State.log("日志显示切换为: " + (val == 1 ? "全屏页" : "底部浮动"));
+        });
+    }
+
+    private void checkLogMode(int mode) {
+        int id = mode == 1 ? R.id.logFull : R.id.logBottom;
+        RadioButton button = viewRef.findViewById(id);
+        if (button != null) {
+            button.setChecked(true);
         }
     }
 

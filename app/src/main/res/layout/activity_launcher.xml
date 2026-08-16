@@ -13,6 +13,7 @@
         android:background="@color/md_background"
         android:elevation="2dp"
         app:navigationIcon="@drawable/ic_back"
+        app:navigationIconTint="@color/md_on_surface"
         app:titleTextColor="@color/md_on_surface" />
 
     <LinearLayout

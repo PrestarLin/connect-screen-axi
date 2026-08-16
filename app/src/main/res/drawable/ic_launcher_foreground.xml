@@ -4,12 +4,22 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- 显示器外框 -->
+    <!-- 显示器本体 -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M32,24 L76,24 C80,24 84,28 84,32 L84,70 C84,74 80,78 76,78 L32,78 C28,78 24,74 24,70 L24,32 C24,28 28,24 32,24 Z" />
-    <!-- 显示器底座 -->
+        android:pathData="M36,32 L72,32 C76,32 78,34 78,38 L78,68 C78,72 76,74 72,74 L36,74 C32,74 30,72 30,68 L30,38 C30,34 32,32 36,32 Z" />
+    <!-- 底座 -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M48,78 L48,86 L42,86 L42,90 L66,90 L66,86 L60,86 L60,78 Z" />
+        android:pathData="M48,74 L48,80 L44,80 L44,84 L64,84 L64,80 L60,80 L60,74 Z" />
+    <!-- 投屏信号弧线 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,62 C36,62 40,58 44,62" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,58 C34,58 40,53 46,58" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,64 A 1.5,1.5 0 1,1 41,64 A 1.5,1.5 0 1,1 38,64 Z" />
 </vector>

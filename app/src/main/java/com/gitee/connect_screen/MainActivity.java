@@ -48,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
     public static final int REQUEST_CODE_MEDIA_PROJECTION = 1001; // 定义一个请求码
 
     private BreadcrumbManager breadcrumbManager;
+    private LinearLayout logPanel;
+    private RecyclerView logList;
+    private LogAdapter logAdapter;
 
     private final BroadcastReceiver usbPermissionReceiver = new BroadcastReceiver() {
         @Override
@@ -105,15 +108,37 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.app_name);
         toolbar.inflateMenu(R.menu.menu_main);
+
+        // 日志面板
+        logPanel = findViewById(R.id.logPanel);
+        logList = findViewById(R.id.logList);
+        int logMode = getSharedPreferences("settings", MODE_PRIVATE)
+                .getInt("log_display_mode", 0);
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_open_log) {
-                if (!"运行日志".equals(breadcrumbManager.getCurrentTitle())) {
-                    State.breadcrumbManager.pushBreadcrumb("运行日志", LogFragment::new);
+                if (logMode == 0) {
+                    toggleLogPanel();
+                } else {
+                    if (!"运行日志".equals(breadcrumbManager.getCurrentTitle())) {
+                        State.breadcrumbManager.pushBreadcrumb("运行日志", LogFragment::new);
+                    }
                 }
                 return true;
             }
             return false;
         });
+        if (logMode == 0) {
+            logList.setLayoutManager(new LinearLayoutManager(this));
+            logAdapter = new LogAdapter(State.logs);
+            logList.setAdapter(logAdapter);
+            findViewById(R.id.btnClearLog).setOnClickListener(v -> {
+                State.logs.clear();
+                logAdapter.notifyDataSetChanged();
+            });
+            findViewById(R.id.btnCollapseLog).setOnClickListener(v -> {
+                logPanel.setVisibility(View.GONE);
+            });
+        }
 
         breadcrumbManager = new BreadcrumbManager(this, getSupportFragmentManager(), findViewById(R.id.breadcrumb));
         State.breadcrumbManager = breadcrumbManager;
@@ -281,7 +306,21 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         return false;
     }
 
-    // 更新日志列表的方法（日志页自行刷新，这里留空实现）
+    // 切换日志面板
+    private void toggleLogPanel() {
+        boolean show = logPanel.getVisibility() != View.VISIBLE;
+        logPanel.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (show && logAdapter != null) {
+            logAdapter.notifyDataSetChanged();
+            logList.scrollToPosition(logAdapter.getItemCount() - 1);
+        }
+    }
+
+    // 更新日志列表的方法
     public void updateLogs() {
+        if (logPanel != null && logPanel.getVisibility() == View.VISIBLE && logAdapter != null) {
+            logAdapter.notifyDataSetChanged();
+            logList.scrollToPosition(logAdapter.getItemCount() - 1);
+        }
     }
 } 

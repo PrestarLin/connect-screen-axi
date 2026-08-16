@@ -63,7 +63,7 @@ public class DiagnosticsFragment extends Fragment {
         final Context ctx = requireContext();
         final Activity activity = requireActivity();
         int mode = QtiOverride.authMode(ctx);
-        if (mode != QtiOverride.MODE_ROOT) {
+        if (mode == QtiOverride.MODE_SHIZUKU) {
             if (!ShizukuUtils.hasPermission() || State.userService == null) {
                 Toast.makeText(ctx, "当前授权模式不可用（Shizuku 未授权或未连接）", Toast.LENGTH_SHORT).show();
                 return;

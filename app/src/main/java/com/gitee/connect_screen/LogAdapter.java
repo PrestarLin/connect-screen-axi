@@ -1,0 +1,46 @@
+package com.gitee.connect_screen;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.List;
+
+public class LogAdapter extends RecyclerView.Adapter<LogAdapter.LogViewHolder> {
+    private final List<String> logs;
+
+    public LogAdapter(List<String> logs) {
+        this.logs = logs;
+    }
+
+    @NonNull
+    @Override
+    public LogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_log, parent, false);
+        return new LogViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull LogViewHolder holder, int position) {
+        holder.textView.setText(logs.get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        return logs.size();
+    }
+
+    static class LogViewHolder extends RecyclerView.ViewHolder {
+        final TextView textView;
+
+        LogViewHolder(View itemView) {
+            super(itemView);
+            textView = itemView.findViewById(R.id.log_text);
+        }
+    }
+}

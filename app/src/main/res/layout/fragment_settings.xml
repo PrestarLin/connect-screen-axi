@@ -80,6 +80,51 @@
             </RadioGroup>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- 日志显示 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="日志显示"
+            android:textColor="@color/md_on_surface_variant"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/md_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/md_outline"
+            app:strokeWidth="1dp">
+
+            <RadioGroup
+                android:id="@+id/logDisplayGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <RadioButton
+                    android:id="@+id/logBottom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="底部浮动"
+                    android:textColor="@color/md_on_surface" />
+
+                <RadioButton
+                    android:id="@+id/logFull"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="全屏页"
+                    android:textColor="@color/md_on_surface" />
+            </RadioGroup>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- 投屏与窗口 -->
         <TextView
             android:layout_width="wrap_content"
