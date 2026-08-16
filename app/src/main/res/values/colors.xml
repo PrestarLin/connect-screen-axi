@@ -41,4 +41,5 @@
     <color name="md_on_error">#FFFFFFFF</color>
     <color name="md_error_container">#FFFFDAD6</color>
     <color name="md_on_error_container">#FF410002</color>
+    <color name="icon_bg">#FF453385</color>
 </resources>

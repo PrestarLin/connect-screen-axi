@@ -107,7 +107,9 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         toolbar.inflateMenu(R.menu.menu_main);
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_open_log) {
-                State.breadcrumbManager.pushBreadcrumb("运行日志", LogFragment::new);
+                if (!"运行日志".equals(breadcrumbManager.getCurrentTitle())) {
+                    State.breadcrumbManager.pushBreadcrumb("运行日志", LogFragment::new);
+                }
                 return true;
             }
             return false;

@@ -28,6 +28,11 @@ public class BreadcrumbManager {
         toolbar.setNavigationOnClickListener(v -> popBreadcrumb());
     }
 
+    /** 当前导航页标题（用于判重）。 */
+    public String getCurrentTitle() {
+        return navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
+    }
+
     /** 是否有下级页面（用于预测性返回回调开关）。 */
     public boolean hasBackNavigation() {
         return factoryStack.size() > 1;
