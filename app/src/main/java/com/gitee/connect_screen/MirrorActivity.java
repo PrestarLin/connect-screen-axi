@@ -106,9 +106,9 @@ public class MirrorActivity extends AppCompatActivity {
         instance = this;
 
         // 读取设置
-        SharedPreferences preferences = getSharedPreferences(MirrorSettingsFragment.PREF_NAME, Context.MODE_PRIVATE);
-        autoRotate = preferences.getBoolean(MirrorSettingsFragment.KEY_AUTO_ROTATE, true);
-        autoScale = preferences.getBoolean(MirrorSettingsFragment.KEY_AUTO_SCALE, true);
+        SharedPreferences preferences = getSharedPreferences("mirror_settings", Context.MODE_PRIVATE);
+        autoRotate = preferences.getBoolean("auto_rotate", true);
+        autoScale = preferences.getBoolean("auto_scale", true);
 
        if (getSupportActionBar() != null) {
            getSupportActionBar().hide();

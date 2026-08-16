@@ -29,9 +29,9 @@
     </HorizontalScrollView>
 
     <ScrollView
+        android:id="@+id/contentScroll"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:fillViewport="true"
         android:overScrollMode="never">
 
@@ -40,14 +40,5 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </ScrollView>
-
-    <!-- 日志面板，通过工具栏菜单开关 -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/logRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="172dp"
-        android:background="@drawable/log_list_background"
-        android:padding="4dp"
-        android:visibility="gone" />
 
 </LinearLayout>

@@ -22,7 +22,6 @@ import com.gitee.connect_screen.DisplaylinkState;
 import com.gitee.connect_screen.MediaProjectionService;
 import com.gitee.connect_screen.MirrorActivity;
 import com.gitee.connect_screen.State;
-import com.gitee.connect_screen.MirrorSettingsFragment;
 
 import java.nio.ByteBuffer;
 
@@ -56,9 +55,9 @@ public class ListenOpenglAndPostFrame {
         this.virtualDisplayArgs = virtualDisplayArgs;
         
         // 从 SharedPreferences 读取设置
-        SharedPreferences preferences = context.getSharedPreferences(MirrorSettingsFragment.PREF_NAME, Context.MODE_PRIVATE);
-        autoRotate = preferences.getBoolean(MirrorSettingsFragment.KEY_AUTO_ROTATE, true);
-        autoScale = preferences.getBoolean(MirrorSettingsFragment.KEY_AUTO_SCALE, true);
+        SharedPreferences preferences = context.getSharedPreferences("mirror_settings", Context.MODE_PRIVATE);
+        autoRotate = preferences.getBoolean("auto_rotate", true);
+        autoScale = preferences.getBoolean("auto_scale", true);
         
         DisplaylinkState displaylinkState = State.displaylinkState;
         displaylinkState.handlerThread = new HandlerThread("ListenOpenglAndPostFrame");

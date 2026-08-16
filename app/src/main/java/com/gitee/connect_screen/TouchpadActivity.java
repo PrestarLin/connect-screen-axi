@@ -165,6 +165,9 @@ public class TouchpadActivity extends AppCompatActivity {
         // 4. 最后设内容视图
         setContentView(R.layout.activity_touchpad);
 
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
+
         modeSpinner = findViewById(R.id.modeSpinner);
         // 设置触控板区域的帮助文案
         touchpadArea = findViewById(R.id.touchpad_area);

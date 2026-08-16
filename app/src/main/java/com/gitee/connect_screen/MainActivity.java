@@ -48,8 +48,6 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
     public static final int REQUEST_CODE_MEDIA_PROJECTION = 1001; // 定义一个请求码
 
     private BreadcrumbManager breadcrumbManager;
-    private RecyclerView logRecyclerView;
-    private LogAdapter logAdapter;
 
     private final BroadcastReceiver usbPermissionReceiver = new BroadcastReceiver() {
         @Override
@@ -108,19 +106,8 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         toolbar.setTitle(R.string.app_name);
         toolbar.inflateMenu(R.menu.menu_main);
         toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_toggle_log) {
-                logRecyclerView = findViewById(R.id.logRecyclerView);
-                boolean show = logRecyclerView.getVisibility() != View.VISIBLE;
-                logRecyclerView.setVisibility(show ? View.VISIBLE : View.GONE);
-                if (show) {
-                    if (logAdapter == null) {
-                        logAdapter = new LogAdapter(State.logs);
-                        logRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-                        logRecyclerView.setAdapter(logAdapter);
-                    }
-                    logAdapter.notifyDataSetChanged();
-                    logRecyclerView.scrollToPosition(logAdapter.getItemCount() - 1);
-                }
+            if (item.getItemId() == R.id.action_open_log) {
+                State.breadcrumbManager.pushBreadcrumb("运行日志", LogFragment::new);
                 return true;
             }
             return false;
@@ -146,9 +133,6 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
 
         // 设置 State.currentActivity 为当前的 MainActivity 实例
         State.currentActivity = new WeakReference<>(this);
-
-        // 初始化日志列表
-        logRecyclerView = findViewById(R.id.logRecyclerView);
 
         // 获取启动 Intent 并打印其 Action 到日志
         Intent intent = getIntent();
@@ -295,11 +279,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         return false;
     }
 
-    // 更新日志列表的方法
+    // 更新日志列表的方法（日志页自行刷新，这里留空实现）
     public void updateLogs() {
-        if (logAdapter != null) {
-            logAdapter.notifyDataSetChanged();
-            logRecyclerView.scrollToPosition(logAdapter.getItemCount() - 1);
-        }
     }
 } 

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="blue">#FF8AB4FF</color>
+
+    <color name="bg_dark">#FF0E1116</color>
+    <color name="surface">#FF171B26</color>
+    <color name="surface_light">#FF1E2433</color>
+    <color name="stroke">#FF333C52</color>
+    <color name="primary">#FFB49BFF</color>
+    <color name="primary_dark">#FF453385</color>
+    <color name="accent">#FF7BD0C1</color>
+    <color name="text_primary">#FFE8EBF3</color>
+    <color name="text_secondary">#FF9AA3B8</color>
+
+    <color name="md_background">#FF0E1116</color>
+    <color name="md_surface">#FF171B26</color>
+    <color name="md_surface_variant">#FF1E2433</color>
+    <color name="md_on_surface">#FFE8EBF3</color>
+    <color name="md_on_surface_variant">#FF9AA3B8</color>
+    <color name="md_outline">#FF333C52</color>
+    <color name="md_primary">#FFB49BFF</color>
+    <color name="md_on_primary">#FF251737</color>
+    <color name="md_primary_container">#FF453385</color>
+    <color name="md_on_primary_container">#FFE6DFFF</color>
+    <color name="md_secondary">#FF7BD0C1</color>
+    <color name="md_on_secondary">#FF07362E</color>
+    <color name="md_secondary_container">#FF1B5A50</color>
+    <color name="md_on_secondary_container">#FFC2FFF1</color>
+    <color name="md_tertiary">#FFFFB98A</color>
+    <color name="md_on_tertiary">#FF44200A</color>
+    <color name="md_tertiary_container">#FF6B3A1A</color>
+    <color name="md_on_tertiary_container">#FFFFDCC2</color>
+    <color name="md_error">#FFFFB4AB</color>
+    <color name="md_on_error">#FF690005</color>
+    <color name="md_error_container">#FF93000A</color>
+    <color name="md_on_error_container">#FFFFDAD6</color>
+</resources>

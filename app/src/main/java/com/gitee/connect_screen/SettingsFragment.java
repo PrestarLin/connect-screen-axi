@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -21,6 +23,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import android.hardware.input.InputManager;
 import android.hardware.display.DisplayManager;
@@ -41,23 +45,25 @@ public class SettingsFragment extends Fragment {
     private Button btnBind;
     private RecyclerView rvExternalDevices;
     private RecyclerView rvInternalDevices;
-    private CheckBox cbForceDesktop;
-    private CheckBox cbForceResizable;
-    private CheckBox cbEnableFreeform;
-    private CheckBox cbEnableNonResizable;
-    private CheckBox cbDisableScreenShareProtection;
-    private CheckBox cbDisableUsbAudio;
-    private CheckBox cbUseRealScreenOff;
-    private CheckBox cbAllowForceScreenOff;
-    private CheckBox cbMouseMiddleButtonSwitch;
-    private CheckBox cbStayOnWhilePlugged;
-    private CheckBox cbAutoScreenOffOnAppOpen;
+    private SwitchMaterial cbForceDesktop;
+    private SwitchMaterial cbForceResizable;
+    private SwitchMaterial cbEnableFreeform;
+    private SwitchMaterial cbEnableNonResizable;
+    private SwitchMaterial cbDisableScreenShareProtection;
+    private SwitchMaterial cbDisableUsbAudio;
+    private SwitchMaterial cbUseRealScreenOff;
+    private SwitchMaterial cbAllowForceScreenOff;
+    private SwitchMaterial cbMouseMiddleButtonSwitch;
+    private SwitchMaterial cbStayOnWhilePlugged;
+    private SwitchMaterial cbAutoScreenOffOnAppOpen;
     private View externalDeviceContainer;
+    private View viewRef;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
+        viewRef = view;
         
         cbForceDesktop = view.findViewById(R.id.cbForceDesktop);
         cbForceResizable = view.findViewById(R.id.cbForceResizable);
@@ -76,7 +82,8 @@ public class SettingsFragment extends Fragment {
         cbAutoScreenOffOnAppOpen = view.findViewById(R.id.cbAutoScreenOffOnAppOpen);
         spinnerAutoScreenOffDisplay = view.findViewById(R.id.spinnerAutoScreenOffDisplay);
         externalDeviceContainer = view.findViewById(R.id.externalDeviceContainer);
-        
+
+        setupTheme();
         initializeDisplaySpinner();
         initializeAutoScreenOffDisplaySpinner();
         setupBindButton();
@@ -108,6 +115,44 @@ public class SettingsFragment extends Fragment {
         spinnerAutoScreenOffDisplay.setVisibility(View.VISIBLE);
         
         return view;
+    }
+
+    private void setupTheme() {
+        RadioGroup themeGroup = viewRef.findViewById(R.id.themeGroup);
+        if (themeGroup == null) {
+            return;
+        }
+        int themeMode = requireContext().getSharedPreferences(App.PREF, Context.MODE_PRIVATE)
+                .getInt(App.KEY_THEME, App.THEME_SYSTEM);
+        checkTheme(themeMode);
+        themeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int mode = checkedId == R.id.themeLight ? App.THEME_LIGHT
+                    : checkedId == R.id.themeDark ? App.THEME_DARK : App.THEME_SYSTEM;
+            requireContext().getSharedPreferences(App.PREF, Context.MODE_PRIVATE)
+                    .edit().putInt(App.KEY_THEME, mode).apply();
+            State.log("主题切换为: " + themeName(mode));
+            App.applyTheme(mode);
+        });
+    }
+
+    private void checkTheme(int mode) {
+        int id = mode == App.THEME_LIGHT ? R.id.themeLight
+                : mode == App.THEME_DARK ? R.id.themeDark : R.id.themeSystem;
+        RadioButton button = viewRef.findViewById(id);
+        if (button != null) {
+            button.setChecked(true);
+        }
+    }
+
+    private String themeName(int mode) {
+        switch (mode) {
+            case App.THEME_LIGHT:
+                return "浅色";
+            case App.THEME_DARK:
+                return "深色";
+            default:
+                return "跟随系统";
+        }
     }
 
     private void initializeDisplaySpinner() {

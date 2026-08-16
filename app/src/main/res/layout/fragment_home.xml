@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="屏连 · 副屏"
-            android:textColor="@color/md_on_primary_container"
+            android:textColor="#FFFFFF"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="外接显示器 · AR 眼镜 · DisplayLink"
-            android:textColor="@color/md_on_primary_container"
+            android:textColor="#FFFFFF"
             android:textSize="13sp"
             android:alpha="0.75" />
 
@@ -56,7 +56,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Shizuku 权限: "
-                android:textColor="@color/md_on_surface_variant"
+                android:textColor="#B9C0D0"
                 android:textSize="12sp" />
 
             <TextView
@@ -64,7 +64,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="未启动"
-                android:textColor="@color/md_on_surface"
+                android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
