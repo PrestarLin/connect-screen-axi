@@ -53,7 +53,7 @@ jobs:
     name: Publish APK to GitHub Release
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
     permissions:
       contents: write
 
@@ -71,14 +71,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VER=$(grep -E 'versionName[[:space:]]+"' app/build.gradle | sed -E 's/.*"([^"]+)".*/\1/')
-          TAG="v${VER}"
           APK="apk/app-debug.apk"
-          # 滚动式正式版：每次主分支构建成功即覆盖更新，保证最新构建始终在最前面
+          if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+            TAG="v${VER}-dev"
+            TITLE="屏连·副屏 v${VER} (dev 构建)"
+            NOTES="屏连·副屏 v${VER} dev 预发布构建。commit ${GITHUB_SHA}。"
+            PRERELEASE="--prerelease"
+          else
+            TAG="v${VER}"
+            TITLE="屏连·副屏 v${VER}"
+            NOTES="屏连·副屏 v${VER}（正式版）。自动云构建 commit ${GITHUB_SHA}。最新构建始终发布到此 Release。"
+            PRERELEASE=""
+          fi
+          # 滚动更新：每次构建成功即覆盖更新，保证最新构建始终在最前面
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release delete "$TAG" --yes --cleanup-tag
           fi
           gh release create "$TAG" "$APK" \
-            --title "屏连·副屏 v${VER}" \
-            --notes "屏连·副屏 v${VER}（正式版）。自动云构建 commit ${GITHUB_SHA}。最新构建始终发布到此 Release。" \
-            --target "$GITHUB_SHA"
+            --title "$TITLE" \
+            --notes "$NOTES" \
+            --target "$GITHUB_SHA" \
+            $PRERELEASE
           echo "Release URL: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
