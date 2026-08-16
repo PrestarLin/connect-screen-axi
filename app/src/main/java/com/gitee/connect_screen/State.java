@@ -40,6 +40,7 @@ public class State {
     public static int mirrorDisplayId = -1;
     public static FloatingButtonService floatingButtonService;
     public static Activity isInPureBlackActivity = null;
+    public static final List<Integer> externalDisplayIds = new ArrayList<>();
 
 
     private static final android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());

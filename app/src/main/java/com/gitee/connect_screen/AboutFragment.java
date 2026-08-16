@@ -10,6 +10,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +61,13 @@ public class AboutFragment extends Fragment {
             versionText.setText("版本：未知");
         }
 
+        // 更新通道选择
+        RadioGroup channelGroup = view.findViewById(R.id.updateChannelGroup);
+        TextView updateStatus = view.findViewById(R.id.updateStatus);
+        Button btnCheck = view.findViewById(R.id.btnCheckUpdate);
+        channelGroup.setOnCheckedChangeListener((g, id) -> updateStatus.setText(""));
+        btnCheck.setOnClickListener(v -> checkUpdate(channelGroup, updateStatus));
+
         GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
@@ -89,5 +98,71 @@ public class AboutFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void checkUpdate(RadioGroup channelGroup, TextView statusView) {
+        boolean isBeta = channelGroup.getCheckedRadioButtonId() == R.id.channelBeta;
+        statusView.setText("正在检查…");
+        new Thread(() -> {
+            try {
+                String url = "https://api.github.com/repos/PrestarLin/connect-screen-axi/releases"
+                        + (isBeta ? "?per_page=5" : "/latest");
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(8000);
+                conn.setRequestProperty("Accept", "application/vnd.github+json");
+                int code = conn.getResponseCode();
+                if (code != 200) {
+                    requireActivity().runOnUiThread(() -> statusView.setText("检测失败（HTTP " + code + "）"));
+                    return;
+                }
+                java.io.BufferedReader br = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+                br.close();
+                String json = sb.toString();
+                org.json.JSONObject release;
+                if (isBeta) {
+                    org.json.JSONArray arr = new org.json.JSONArray(json);
+                    release = null;
+                    for (int i = 0; i < arr.length(); i++) {
+                        org.json.JSONObject r = arr.getJSONObject(i);
+                        if (r.optBoolean("prerelease", false)) {
+                            release = r;
+                            break;
+                        }
+                    }
+                    if (release == null) {
+                        requireActivity().runOnUiThread(() -> statusView.setText("未找到测试版"));
+                        return;
+                    }
+                } else {
+                    release = new org.json.JSONObject(json);
+                }
+                String latestCommit = release.optString("target_commitish", "");
+                String tagName = release.optString("tag_name", "");
+                String htmlUrl = release.optString("html_url", "");
+                String currentCommit = BuildConfig.GIT_COMMIT;
+                if (latestCommit.equals(currentCommit) || latestCommit.startsWith(currentCommit)
+                        || currentCommit.startsWith(latestCommit)) {
+                    requireActivity().runOnUiThread(() -> statusView.setText("已是最新版本（" + tagName + "）"));
+                } else {
+                    final String urlFinal = htmlUrl;
+                    requireActivity().runOnUiThread(() -> {
+                        statusView.setText("有新版本 " + tagName + "\n点击下载");
+                        statusView.setOnClickListener(v -> {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlFinal));
+                            startActivity(intent);
+                        });
+                        statusView.setTextColor(getResources().getColor(R.color.md_primary));
+                    });
+                }
+            } catch (Exception e) {
+                String msg = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+                requireActivity().runOnUiThread(() -> statusView.setText("检测失败：" + msg));
+            }
+        }).start();
     }
 }

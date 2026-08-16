@@ -102,6 +102,7 @@ public class BreadcrumbManager {
         }
         Fragment fragment = factoryStack.get(factoryStack.size() - 1).createFragment();
         fragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
         notifyNavigationChanged();

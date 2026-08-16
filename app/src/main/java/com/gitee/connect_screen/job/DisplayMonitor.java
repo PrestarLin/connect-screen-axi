@@ -38,6 +38,9 @@ public class DisplayMonitor {
             @Override
             public void onDisplayAdded(int displayId) {
                 State.log("新增显示器，displayId: " + displayId);
+                if (displayId != Display.DEFAULT_DISPLAY && !State.externalDisplayIds.contains(displayId)) {
+                    State.externalDisplayIds.add(displayId);
+                }
                 Display display = displayManager.getDisplay(displayId);
                 if (display != null) {
                     handleNewDisplay(display);
@@ -47,6 +50,16 @@ public class DisplayMonitor {
             @Override
             public void onDisplayRemoved(int displayId) {
                 State.log("移除显示器，displayId: " + displayId);
+                if (displayId != Display.DEFAULT_DISPLAY) {
+                    try {
+                        android.widget.Toast.makeText(
+                                State.currentActivity.get(),
+                                "显示器 " + displayId + " 已断开",
+                                android.widget.Toast.LENGTH_SHORT).show();
+                    } catch (Exception ignored) {
+                    }
+                    State.externalDisplayIds.remove(Integer.valueOf(displayId));
+                }
                 if (State.floatingButtonService != null) {
                     State.floatingButtonService.onDisplayRemoved(displayId);
                 }
