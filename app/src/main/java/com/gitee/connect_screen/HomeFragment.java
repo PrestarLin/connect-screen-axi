@@ -91,6 +91,14 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (State.breadcrumbManager != null) {
+            State.breadcrumbManager.forceHomeToolbar();
+        }
+    }
+
     private void showHelp() {
         new AlertDialog.Builder(requireContext())
             .setTitle("还没有投屏应用")

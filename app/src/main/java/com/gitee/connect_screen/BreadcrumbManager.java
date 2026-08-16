@@ -38,6 +38,19 @@ public class BreadcrumbManager {
         return factoryStack.size() > 1;
     }
 
+    /** 强制把工具栏设为首页状态（无返回键 + 标题"屏连·副屏"）。 */
+    public void forceHomeToolbar() {
+        try {
+            if (toolbar == null) {
+                return;
+            }
+            toolbar.setNavigationIcon(0);
+            toolbar.setTitle("屏连·副屏");
+        } catch (Throwable e) {
+            // ignore
+        }
+    }
+
     /** 强制同步工具栏（标题 + 返回键）到当前导航状态。 */
     public void syncToolbar() {
         try {
