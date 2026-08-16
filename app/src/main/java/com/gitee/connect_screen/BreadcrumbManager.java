@@ -19,6 +19,8 @@ public class BreadcrumbManager {
     private final List<FragmentFactory> factoryStack = new ArrayList<>();
     private final FragmentManager fragmentManager;
     private Runnable onNavigationChanged;
+    private boolean isPop = false;
+    private boolean noAnimation = false;
 
     public BreadcrumbManager(Context context, FragmentManager fragmentManager, LinearLayout breadcrumb) {
         this.breadcrumb = breadcrumb;
@@ -52,6 +54,7 @@ public class BreadcrumbManager {
                 navigationPath.add(newPath);
             }
             factoryStack.add(fragmentFactory);
+            isPop = false;
             showTop();
         } catch (Throwable e) {
             // ignore
@@ -69,6 +72,7 @@ public class BreadcrumbManager {
                 if (navigationPath.isEmpty()) {
                     navigationPath.add("首页");
                 }
+                isPop = true;
                 showTop();
             } else {
                 Fragment current = fragmentManager.findFragmentById(R.id.fragmentContainer);
@@ -90,6 +94,7 @@ public class BreadcrumbManager {
             if (State.currentActivity == null || State.currentActivity.get() == null) {
                 return;
             }
+            noAnimation = true;
             showTop();
         } catch (Exception e) {
             // ignore
@@ -101,11 +106,19 @@ public class BreadcrumbManager {
             return;
         }
         Fragment fragment = factoryStack.get(factoryStack.size() - 1).createFragment();
-        fragmentManager.beginTransaction()
-                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
-                .replace(R.id.fragmentContainer, fragment)
-                .commit();
+        androidx.fragment.app.FragmentTransaction ft = fragmentManager.beginTransaction();
+        if (noAnimation) {
+            ft.setCustomAnimations(0, 0);
+        } else if (isPop) {
+            ft.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right);
+        } else {
+            ft.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
+        }
+        ft.replace(R.id.fragmentContainer, fragment);
+        ft.commit();
         notifyNavigationChanged();
+        isPop = false;
+        noAnimation = false;
     }
 
     public LinearLayout getBreadcrumbView() {
