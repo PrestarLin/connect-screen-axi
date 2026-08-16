@@ -53,6 +53,8 @@ public class LauncherActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_launcher);
 
+        EdgeToEdgeUtil.padSystemBars(this);
+
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 

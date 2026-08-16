@@ -165,6 +165,8 @@ public class TouchpadActivity extends AppCompatActivity {
         // 4. 最后设内容视图
         setContentView(R.layout.activity_touchpad);
 
+        EdgeToEdgeUtil.padSystemBars(this);
+
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 

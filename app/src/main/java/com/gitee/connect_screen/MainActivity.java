@@ -108,6 +108,8 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
 
         setContentView(R.layout.activity_main);
 
+        EdgeToEdgeUtil.padSystemBars(this);
+
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.app_name);
         toolbar.inflateMenu(R.menu.menu_main);

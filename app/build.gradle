@@ -9,12 +9,24 @@ android {
     compileSdk 36
     buildToolsVersion "36.1.0"
 
+    def gitCommit = "unknown"
+    try {
+        gitCommit = providers.exec {
+            commandLine 'git', 'rev-parse', '--short=7', 'HEAD'
+        }.standardOutput.asText.get().trim()
+    } catch (Exception e) {
+        gitCommit = "unknown"
+    }
+
     defaultConfig {
         applicationId "com.prestarlin.screenfucking"
         minSdk 29
         targetSdk 36
         versionCode 40
         versionName "1.4.0"
+
+        buildConfigField "String", "GIT_COMMIT", "\"${gitCommit}\""
+        buildConfigField "String", "BUILD_TIME", "\"${new Date().format('yyyy-MM-dd HH:mm')}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
