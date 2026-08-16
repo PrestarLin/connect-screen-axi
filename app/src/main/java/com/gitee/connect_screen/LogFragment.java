@@ -61,8 +61,8 @@ public class LogFragment extends Fragment {
                 parent = (View) parent.getParent();
             }
             if (parent instanceof android.widget.ScrollView) {
-                ((android.widget.ScrollView) parent).post(() ->
-                        ((android.widget.ScrollView) parent).fullScroll(View.FOCUS_DOWN));
+                final android.widget.ScrollView sv = (android.widget.ScrollView) parent;
+                sv.post(() -> sv.fullScroll(View.FOCUS_DOWN));
             }
         } catch (Exception ignored) {
         }
