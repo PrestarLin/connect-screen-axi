@@ -100,43 +100,55 @@ public class UserService extends IUserService.Stub  {
 
     public void setScreenPower(int powerMode) {
         Log.i("UserService", "try to setScreenPower: " + powerMode);
-        IDisplayManager displayManager = IDisplayManager.Stub.asInterface(SystemServiceHelper.getSystemService(Context.DISPLAY_SERVICE));
+        boolean succeeded = false;
+        // 尝试 API 35+ 的 requestDisplayPower
         if (Build.VERSION.SDK_INT >= 35) {
+            IDisplayManager displayManager = IDisplayManager.Stub.asInterface(SystemServiceHelper.getSystemService(Context.DISPLAY_SERVICE));
             if (powerMode == SurfaceControl.POWER_MODE_OFF) {
                 try {
                     displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, false);
                     Log.i("UserService", "requestDisplayPower by bool");
-                } catch(Throwable e) {
-                    Log.e("UserService", "failed to power off screen", e);
+                    succeeded = true;
+                } catch (Throwable e) {
+                    Log.e("UserService", "requestDisplayPower(bool) failed", e);
                     try {
                         displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, SurfaceControl.POWER_MODE_OFF);
                         Log.i("UserService", "requestDisplayPower by int");
-                    } catch(Throwable e2) {
-                        Log.e("UserService", "failed to power off screen", e2);
+                        succeeded = true;
+                    } catch (Throwable e2) {
+                        Log.e("UserService", "requestDisplayPower(int) also failed", e2);
                     }
                 }
             } else {
                 try {
                     displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, true);
                     Log.i("UserService", "requestDisplayPower by bool");
+                    succeeded = true;
                 } catch (Throwable e) {
-                    Log.e("UserService", "failed to power up screen", e);
+                    Log.e("UserService", "requestDisplayPower(bool) failed", e);
                     try {
                         displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, SurfaceControl.POWER_MODE_NORMAL);
                         Log.i("UserService", "requestDisplayPower by int");
-                    } catch(Throwable e2) {
-                        Log.e("UserService", "failed to power up screen", e2);
+                        succeeded = true;
+                    } catch (Throwable e2) {
+                        Log.e("UserService", "requestDisplayPower(int) also failed", e2);
                     }
                 }
             }
-        } else {
+        }
+        // 回退到 SurfaceControl.setDisplayPowerMode (所有 API 级别)
+        if (!succeeded) {
             IBinder d = SurfaceControl.getBuiltInDisplay();
             if (d == null) {
                 Log.i("UserService", "Could not get built-in display");
             } else {
                 SurfaceControl.setDisplayPowerMode(d, powerMode);
-                Log.i("UserService", "setDisplayPowerMode success");
+                Log.i("UserService", "setDisplayPowerMode fallback success");
+                succeeded = true;
             }
+        }
+        if (!succeeded) {
+            Log.e("UserService", "All methods to set screen power failed");
         }
     }
 

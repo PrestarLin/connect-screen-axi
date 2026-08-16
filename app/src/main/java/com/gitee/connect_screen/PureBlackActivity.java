@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PureBlackActivity extends AppCompatActivity {
+    private static final String EXTRA_FORCE_REAL = "force_real_screen_off";
     // 添加 Set 来存储外部设备 ID
     private final Set<Integer> externalDeviceIds = new HashSet<>();
     private final boolean hasShizukuPermission = ShizukuUtils.hasPermission();
@@ -61,8 +62,10 @@ public class PureBlackActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // 先读取设置，决定是否使用真实熄屏
-        useRealScreenOff = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        boolean prefRealOff = getSharedPreferences("settings", Context.MODE_PRIVATE)
                 .getBoolean("use_real_screen_off", false);
+        boolean forceReal = getIntent().getBooleanExtra(EXTRA_FORCE_REAL, false);
+        useRealScreenOff = forceReal || prefRealOff;
         
         // 如果使用真实熄屏，在 super.onCreate 之前就禁用动画和设置透明背景
         if (useRealScreenOff) {

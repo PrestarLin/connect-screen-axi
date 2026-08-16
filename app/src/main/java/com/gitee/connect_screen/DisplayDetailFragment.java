@@ -316,6 +316,7 @@ public class DisplayDetailFragment extends Fragment {
             wakeKeyBtn.setVisibility(View.VISIBLE);
             realScreenOffBtn.setOnClickListener(v -> {
                 Intent intent = new Intent(getContext(), PureBlackActivity.class);
+                intent.putExtra("force_real_screen_off", true);
                 ActivityOptions options = ActivityOptions.makeBasic();
                 startActivity(intent, options.toBundle());
             });
