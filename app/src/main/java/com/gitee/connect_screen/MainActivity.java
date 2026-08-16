@@ -22,6 +22,8 @@ import android.permission.IPermissionManager;
 import android.view.Display;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
 import androidx.annotation.Nullable;
