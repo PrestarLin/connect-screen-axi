@@ -71,14 +71,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VER=$(grep -E 'versionName[[:space:]]+"' app/build.gradle | sed -E 's/.*"([^"]+)".*/\1/')
-          TAG="v${VER}-${GITHUB_SHA::7}"
+          TAG="v${VER}"
           APK="apk/app-debug.apk"
+          # 滚动式正式版：每次主分支构建成功即覆盖更新，保证最新构建始终在最前面
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release delete "$TAG" --yes --cleanup-tag
           fi
           gh release create "$TAG" "$APK" \
-            --title "屏连·副屏 ${TAG}" \
-            --notes "Debug build of commit ${GITHUB_SHA}." \
-            --target "$GITHUB_SHA" \
-            --prerelease
+            --title "屏连·副屏 v${VER}" \
+            --notes "屏连·副屏 v${VER}（正式版）
+
+自动云构建 · commit ${GITHUB_SHA}
+
+最新构建发布到本 Release；可到仓库 Actions 页面的 app-debug artifact 下载历史构建。" \
+            --target "$GITHUB_SHA"
           echo "Release URL: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
