@@ -2,6 +2,7 @@ package com.gitee.connect_screen;
 
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -109,15 +110,15 @@ public class HomeFragment extends Fragment {
         String status;
         if (!started) {
             status = "未启动";
-            dotColor = 0xFFF4511E;
+            dotColor = requireContext().getColor(R.color.md_error);
             permissionBtn.setVisibility(View.GONE);
         } else if (!hasPermission) {
             status = "已启动，未授权";
-            dotColor = 0xFFFFC107;
+            dotColor = requireContext().getColor(R.color.md_tertiary);
             permissionBtn.setVisibility(View.VISIBLE);
         } else {
             status = "已授权";
-            dotColor = 0xFF2BD9A9;
+            dotColor = requireContext().getColor(R.color.md_secondary);
             permissionBtn.setVisibility(View.GONE);
         }
 

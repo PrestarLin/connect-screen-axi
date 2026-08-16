@@ -59,6 +59,7 @@ public class BreadcrumbManager {
             }
             factoryStack.add(fragmentFactory);
             showTop();
+            forceTitle();
         } catch (Throwable e) {
             // ignore
         }
@@ -78,6 +79,7 @@ public class BreadcrumbManager {
                     navigationPath.add("首页");
                 }
                 showTop();
+                forceTitle();
             } else {
                 Fragment current = fragmentManager.findFragmentById(R.id.fragmentContainer);
                 if (current != null && current.getActivity() != null) {
@@ -102,6 +104,7 @@ public class BreadcrumbManager {
                 return;
             }
             showTop();
+            forceTitle();
         } catch (Exception e) {
             // ignore
         }
@@ -117,6 +120,15 @@ public class BreadcrumbManager {
                 .commit();
         updateBreadcrumbView();
         notifyNavigationChanged();
+    }
+
+    private void forceTitle() {
+        if (toolbar == null) {
+            return;
+        }
+        String last = navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
+        String title = "首页".equals(last) ? "屏连·副屏" : last;
+        toolbar.setTitle(title);
     }
 
     private void updateBreadcrumbView() {

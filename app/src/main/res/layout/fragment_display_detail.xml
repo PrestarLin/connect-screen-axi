@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp">
+    android:padding="24dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,6 +16,8 @@
             android:layout_height="wrap_content"
             app:cardBackgroundColor="@color/md_surface"
             app:cardCornerRadius="16dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
             app:cardElevation="0dp"
             app:strokeColor="@color/md_outline"
             app:strokeWidth="1dp">
@@ -24,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="24dp">
 
                 <TextView
                     android:id="@+id/detail_text"
@@ -51,6 +53,8 @@
             android:layout_marginTop="12dp"
             app:cardBackgroundColor="@color/md_surface"
             app:cardCornerRadius="16dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
             app:cardElevation="0dp"
             app:strokeColor="@color/md_outline"
             app:strokeWidth="1dp">
@@ -59,7 +63,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="24dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -150,6 +154,8 @@
             android:layout_marginTop="12dp"
             app:cardBackgroundColor="@color/md_surface"
             app:cardCornerRadius="16dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
             app:cardElevation="0dp"
             app:strokeColor="@color/md_outline"
             app:strokeWidth="1dp">
@@ -158,7 +164,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="24dp">
 
                 <Button
                     android:id="@+id/supported_modes_toggle"
