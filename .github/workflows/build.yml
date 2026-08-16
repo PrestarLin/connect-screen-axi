@@ -79,10 +79,6 @@ jobs:
           fi
           gh release create "$TAG" "$APK" \
             --title "屏连·副屏 v${VER}" \
-            --notes "屏连·副屏 v${VER}（正式版）
-
-自动云构建 · commit ${GITHUB_SHA}
-
-最新构建发布到本 Release；可到仓库 Actions 页面的 app-debug artifact 下载历史构建。" \
+            --notes "屏连·副屏 v${VER}（正式版）。自动云构建 commit ${GITHUB_SHA}。最新构建始终发布到此 Release。" \
             --target "$GITHUB_SHA"
           echo "Release URL: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
