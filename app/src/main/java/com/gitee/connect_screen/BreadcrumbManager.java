@@ -54,7 +54,7 @@ public class BreadcrumbManager {
      */
     public void pushBreadcrumb(String newPath, FragmentFactory fragmentFactory) {
         try {
-            if (!newPath.isEmpty() && !navigationPath.contains(newPath)) {
+            if (!newPath.isEmpty() && !newPath.equals(getCurrentTitle())) {
                 navigationPath.add(newPath);
             }
             factoryStack.add(fragmentFactory);
@@ -70,8 +70,13 @@ public class BreadcrumbManager {
     public void popBreadcrumb() {
         try {
             if (factoryStack.size() > 1) {
-                navigationPath.remove(navigationPath.size() - 1);
+                if (!navigationPath.isEmpty()) {
+                    navigationPath.remove(navigationPath.size() - 1);
+                }
                 factoryStack.remove(factoryStack.size() - 1);
+                if (navigationPath.isEmpty()) {
+                    navigationPath.add("首页");
+                }
                 showTop();
             } else {
                 Fragment current = fragmentManager.findFragmentById(R.id.fragmentContainer);
