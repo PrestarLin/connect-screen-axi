@@ -260,23 +260,53 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateShizukuStatus(TextView statusView, View dot, Button permissionBtn) {
+        int authMode = QtiOverride.authMode(requireContext());
+        String authName = QtiOverride.authModeName(authMode);
+
         boolean started = ShizukuUtils.hasShizukuStarted();
         boolean hasPermission = ShizukuUtils.hasPermission();
 
+        // 更新权限前缀文字
+        TextView prefixView = getView() != null ? getView().findViewById(R.id.shizukuStatusPrefix) : null;
+        if (prefixView != null) {
+            prefixView.setText("授权方式: ");
+        }
+
         int dotColor;
         String status;
-        if (!started) {
-            status = "未启动";
-            dotColor = requireContext().getColor(R.color.md_error);
-            permissionBtn.setVisibility(View.GONE);
-        } else if (!hasPermission) {
-            status = "已启动，未授权";
-            dotColor = requireContext().getColor(R.color.md_tertiary);
-            permissionBtn.setVisibility(View.VISIBLE);
-        } else {
-            status = "已授权";
-            dotColor = requireContext().getColor(R.color.md_secondary);
-            permissionBtn.setVisibility(View.GONE);
+        // 根据授权模式显示状态
+        switch (authMode) {
+            case QtiOverride.MODE_ROOT:
+                dotColor = requireContext().getColor(R.color.md_secondary);
+                status = "Root";
+                permissionBtn.setVisibility(View.GONE);
+                break;
+            case QtiOverride.MODE_SHIZUKU:
+                if (!started) {
+                    dotColor = requireContext().getColor(R.color.md_error);
+                    status = "Shizuku 未启动";
+                    permissionBtn.setVisibility(View.GONE);
+                } else if (!hasPermission) {
+                    dotColor = requireContext().getColor(R.color.md_tertiary);
+                    status = "Shizuku 未授权";
+                    permissionBtn.setVisibility(View.VISIBLE);
+                } else {
+                    dotColor = requireContext().getColor(R.color.md_secondary);
+                    status = "Shizuku 已授权";
+                    permissionBtn.setVisibility(View.GONE);
+                }
+                break;
+            default: // AUTO
+                if (hasPermission) {
+                    dotColor = requireContext().getColor(R.color.md_secondary);
+                    status = "自动 (Shizuku)";
+                    permissionBtn.setVisibility(View.GONE);
+                } else {
+                    dotColor = requireContext().getColor(R.color.md_secondary);
+                    status = "自动 (Root)";
+                    permissionBtn.setVisibility(View.GONE);
+                }
+                break;
         }
 
         try {
