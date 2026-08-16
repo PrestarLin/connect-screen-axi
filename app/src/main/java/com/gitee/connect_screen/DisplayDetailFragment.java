@@ -22,6 +22,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -306,6 +308,45 @@ public class DisplayDetailFragment extends Fragment {
             });
         }
 
+        // 真实熄屏 + 唤醒键绑定（仅外接显示器）
+        Button realScreenOffBtn = view.findViewById(R.id.btn_real_screen_off);
+        Button wakeKeyBtn = view.findViewById(R.id.btn_wake_key);
+        if (displayId != Display.DEFAULT_DISPLAY) {
+            realScreenOffBtn.setVisibility(View.VISIBLE);
+            wakeKeyBtn.setVisibility(View.VISIBLE);
+            realScreenOffBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(getContext(), PureBlackActivity.class);
+                ActivityOptions options = ActivityOptions.makeBasic();
+                startActivity(intent, options.toBundle());
+            });
+            String[] keys = {"音量上", "音量下", "电源键"};
+            final int[] keyValues = {android.view.KeyEvent.KEYCODE_VOLUME_UP,
+                    android.view.KeyEvent.KEYCODE_VOLUME_DOWN,
+                    android.view.KeyEvent.KEYCODE_POWER};
+            SharedPreferences prefs = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE);
+            int savedKey = prefs.getInt("wake_key", android.view.KeyEvent.KEYCODE_VOLUME_UP);
+            String currentKeyName = "音量上";
+            for (int i = 0; i < keyValues.length; i++) {
+                if (keyValues[i] == savedKey) {
+                    currentKeyName = keys[i];
+                    break;
+                }
+            }
+            wakeKeyBtn.setText("唤醒键：" + currentKeyName);
+            wakeKeyBtn.setOnClickListener(v -> {
+                new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                        .setTitle("选择唤醒键")
+                        .setItems(keys, (dialog, which) -> {
+                            int selectedKey = keyValues[which];
+                            prefs.edit().putInt("wake_key", selectedKey).apply();
+                            wakeKeyBtn.setText("唤醒键：" + keys[which]);
+                            showToast("唤醒键已设置为 " + keys[which]);
+                        })
+                        .setNegativeButton("取消", null)
+                        .show();
+            });
+        }
+
         return view;
     }
 
@@ -440,30 +481,50 @@ public class DisplayDetailFragment extends Fragment {
             return;
         }
 
-        String[] items = new String[supportedModes.length];
+        View dialogView = LayoutInflater.from(getContext())
+                .inflate(R.layout.dialog_select_mode, null);
+        RadioGroup radioGroup = dialogView.findViewById(R.id.modeRadioGroup);
+
         for (int i = 0; i < supportedModes.length; i++) {
             Display.Mode mode = supportedModes[i];
-            items[i] = String.format("ID:%d %dx%d %.1fHz",
+            RadioButton rb = new RadioButton(getContext());
+            rb.setText(String.format("ID:%d  %dx%d  %.1fHz",
                     mode.getModeId(),
                     mode.getPhysicalWidth(),
                     mode.getPhysicalHeight(),
-                    mode.getRefreshRate());
+                    mode.getRefreshRate()));
+            rb.setTextColor(getContext().getColor(R.color.md_on_surface));
+            rb.setId(i);
+            rb.setPadding(0, (int) (8 * getResources().getDisplayMetrics().density), 0,
+                    (int) (8 * getResources().getDisplayMetrics().density));
+            radioGroup.addView(rb);
+        }
+        if (supportedModes.length > 0) {
+            radioGroup.check(0);
         }
 
-        new androidx.appcompat.app.AlertDialog.Builder(getContext())
-            .setTitle("选择显示模式")
-            .setItems(items, (dialog, which) -> {
-                Display.Mode selectedMode = supportedModes[which];
+        final androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                .setView(dialogView)
+                .create();
+
+        dialogView.findViewById(R.id.btnConfirmMode).setOnClickListener(v -> {
+            int checkedId = radioGroup.getCheckedRadioButtonId();
+            if (checkedId >= 0 && checkedId < supportedModes.length) {
+                Display.Mode selectedMode = supportedModes[checkedId];
                 try {
                     IDisplayManager displayManager = ServiceUtils.getDisplayManager();
                     displayManager.setUserPreferredDisplayMode(displayId, selectedMode);
-                    showToast("设置是设置了，但是大概率无效");
+                    showToast("显示模式已设置（可能需接显示器后生效）");
                 } catch (Exception e) {
                     State.log("设置显示模式失败: " + e);
                 }
-            })
-            .setNegativeButton("取消", null)
-            .show();
+            }
+            dialog.dismiss();
+        });
+
+        dialogView.findViewById(R.id.btnCancelMode).setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     

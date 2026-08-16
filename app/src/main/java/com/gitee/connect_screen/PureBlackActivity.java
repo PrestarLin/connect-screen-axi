@@ -343,16 +343,16 @@ public class PureBlackActivity extends AppCompatActivity {
         return false;
     }
 
-    @Override
+@Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (useRealScreenOff) {
-           if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-               // 让系统处理音量调节
-               super.onKeyDown(keyCode, event);
-               // 关闭当前Activity
-               finish();
-               return true;
-           }
+            int wakeKey = getSharedPreferences("settings", MODE_PRIVATE)
+                    .getInt("wake_key", android.view.KeyEvent.KEYCODE_VOLUME_UP);
+            if (keyCode == wakeKey) {
+                super.onKeyDown(keyCode, event);
+                finish();
+                return true;
+            }
         }
         return super.onKeyDown(keyCode, event);
     }

@@ -5,6 +5,7 @@ import com.gitee.connect_screen.shizuku.ServiceUtils;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.view.Display;
 import android.view.IWindowManager;
 import android.view.WindowManager;
 
@@ -27,6 +28,10 @@ public class ChangeDPI implements Job {
 
     @Override
     public void start() throws YieldException {
+        if (displayId == Display.DEFAULT_DISPLAY) {
+            State.log("DPI 修改不支持内置屏幕");
+            return;
+        }
         acquireShizuku.start();
         if (!acquireShizuku.acquired) {
             return;

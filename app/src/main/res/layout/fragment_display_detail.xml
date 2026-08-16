@@ -288,5 +288,21 @@
             android:text="桥接\n(让竖屏应用自动旋转，\n覆盖刘海造成的黑边)"
             android:visibility="gone" />
 
+        <Button
+            android:id="@+id/btn_real_screen_off"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="真实熄屏"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_wake_key"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="唤醒键：音量上"
+            android:visibility="gone" />
+
     </LinearLayout>
 </ScrollView>

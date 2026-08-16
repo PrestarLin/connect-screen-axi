@@ -1,6 +1,7 @@
 package com.gitee.connect_screen.dialog;
 
 import android.content.Context;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -14,6 +15,14 @@ import com.gitee.connect_screen.job.ChangeDPI;
 
 public class DpiDialog {
     public static void show(Context context, int displayId, int currentDpi) {
+        if (displayId == Display.DEFAULT_DISPLAY) {
+            new AlertDialog.Builder(context)
+                    .setTitle("不支持")
+                    .setMessage("DPI 修改仅支持外接显示器，不支持手机内置屏幕。")
+                    .setPositiveButton("知道了", null)
+                    .show();
+            return;
+        }
         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_dpi, null);
         EditText dpiInput = dialogView.findViewById(R.id.dpi_input);
         
