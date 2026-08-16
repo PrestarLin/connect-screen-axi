@@ -33,7 +33,7 @@ jobs:
 
       - name: Install Android SDK components
         run: |
-          sdkmanager --install "platforms;android-34"
+          sdkmanager --install "platforms;android-36"
           sdkmanager --install "build-tools;36.1.0"
           sdkmanager --install "ndk;27.0.12077973"
 

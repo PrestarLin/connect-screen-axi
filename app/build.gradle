@@ -6,13 +6,13 @@ plugins {
 
 android {
     namespace 'com.gitee.connect_screen'
-    compileSdk 34
+    compileSdk 36
     buildToolsVersion "36.1.0"
 
     defaultConfig {
-        applicationId "com.gitee.connect_screen"
+        applicationId "com.prestarlin.screenfucking"
         minSdk 29
-        targetSdk 34
+        targetSdk 36
         versionCode 40
         versionName "1.4.0"
 

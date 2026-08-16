@@ -26,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -147,6 +148,24 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         breadcrumbManager.setToolbar(toolbar);
         breadcrumbManager.pushBreadcrumb("首页", () -> new HomeFragment());
 
+        // 根据实际显示的 Fragment 驱动工具栏（决定性地修复标题/返回键残留）
+        getSupportFragmentManager().registerFragmentLifecycleCallbacks(
+                new androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
+                    @Override
+                    public void onFragmentResumed(@NonNull androidx.fragment.app.FragmentManager fm,
+                                                  @NonNull androidx.fragment.app.Fragment f) {
+                        syncToolbarForFragment(f);
+                    }
+
+                    @Override
+                    public void onFragmentViewCreated(@NonNull androidx.fragment.app.FragmentManager fm,
+                                                      @NonNull androidx.fragment.app.Fragment f,
+                                                      @NonNull View v,
+                                                      @Nullable Bundle savedInstanceState) {
+                        syncToolbarForFragment(f);
+                    }
+                }, true);
+
         // 预测性返回：有下级页面时拦截并弹栈，根层交给系统（有返回动画）
         androidx.activity.OnBackPressedCallback backCallback =
                 new androidx.activity.OnBackPressedCallback(false) {
@@ -206,6 +225,32 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         
         // 检查是否需要在应用打开时自动熄屏
         checkAutoScreenOffOnAppOpen();
+    }
+
+    /** 依据实际显示的 Fragment 驱动工具栏（决定性修复标题/返回键残留）。 */
+    private void syncToolbarForFragment(androidx.fragment.app.Fragment f) {
+        try {
+            androidx.appcompat.widget.Toolbar tb = findViewById(R.id.toolbar);
+            if (tb == null || f == null) {
+                return;
+            }
+            if (f instanceof HomeFragment) {
+                tb.setNavigationIcon(0);
+                tb.setTitle("屏连·副屏");
+                return;
+            }
+            tb.setNavigationIcon(R.drawable.ic_back);
+            String title = "";
+            if (State.breadcrumbManager != null) {
+                title = State.breadcrumbManager.getCurrentTitle();
+            }
+            if (title == null || title.isEmpty() || "首页".equals(title)) {
+                title = "屏连·副屏";
+            }
+            tb.setTitle(title);
+        } catch (Throwable e) {
+            // ignore
+        }
     }
 
     @Override
