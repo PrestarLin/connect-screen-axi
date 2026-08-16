@@ -85,6 +85,7 @@ public class SettingsFragment extends Fragment {
 
         setupTheme();
         setupLogDisplay();
+        setupAuthMode();
         initializeDisplaySpinner();
         initializeAutoScreenOffDisplaySpinner();
         setupBindButton();
@@ -174,6 +175,40 @@ public class SettingsFragment extends Fragment {
 
     private void checkLogMode(int mode) {
         int id = mode == 1 ? R.id.logFull : R.id.logBottom;
+        RadioButton button = viewRef.findViewById(id);
+        if (button != null) {
+            button.setChecked(true);
+        }
+    }
+
+    private void setupAuthMode() {
+        RadioGroup authGroup = viewRef.findViewById(R.id.authModeGroup);
+        if (authGroup == null) {
+            return;
+        }
+        int mode = requireContext().getSharedPreferences(QtiOverride.PREF, Context.MODE_PRIVATE)
+                .getInt(QtiOverride.KEY_AUTH, QtiOverride.MODE_AUTO);
+        checkAuthMode(mode);
+        authGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int val = QtiOverride.MODE_AUTO;
+            if (checkedId == R.id.authRoot) {
+                val = QtiOverride.MODE_ROOT;
+            } else if (checkedId == R.id.authShizuku) {
+                val = QtiOverride.MODE_SHIZUKU;
+            }
+            requireContext().getSharedPreferences(QtiOverride.PREF, Context.MODE_PRIVATE)
+                    .edit().putInt(QtiOverride.KEY_AUTH, val).apply();
+            State.log("授权模式切换为: " + QtiOverride.authModeName(val));
+        });
+    }
+
+    private void checkAuthMode(int mode) {
+        int id = R.id.authAuto;
+        if (mode == QtiOverride.MODE_ROOT) {
+            id = R.id.authRoot;
+        } else if (mode == QtiOverride.MODE_SHIZUKU) {
+            id = R.id.authShizuku;
+        }
         RadioButton button = viewRef.findViewById(id);
         if (button != null) {
             button.setChecked(true);

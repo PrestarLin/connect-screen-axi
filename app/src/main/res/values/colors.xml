@@ -44,6 +44,7 @@
     <color name="icon_bg">#FF453385</color>
     <color name="hero_gradient_start">#FFB3E5FC</color>
     <color name="hero_gradient_end">#FFE1F5FE</color>
+    <color name="hero_bg">#FFD4EDFA</color>
     <color name="hero_text_primary">#FF03396C</color>
     <color name="hero_text_secondary">#FF2E6B9E</color>
     <color name="hero_pill_bg">#FFE8F0FE</color>

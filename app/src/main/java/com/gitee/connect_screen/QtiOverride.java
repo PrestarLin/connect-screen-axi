@@ -15,8 +15,8 @@ public final class QtiOverride {
     public static final int MODE_SHIZUKU = 1;
     public static final int MODE_ROOT = 2;
 
-    private static final String PREF = "qti_prefs";
-    private static final String KEY_AUTH = "auth_mode";
+    public static final String PREF = "qti_prefs";
+    public static final String KEY_AUTH = "auth_mode";
 
     private QtiOverride() {
     }
