@@ -38,6 +38,29 @@ public class BreadcrumbManager {
         return factoryStack.size() > 1;
     }
 
+    /** 强制同步工具栏（标题 + 返回键）到当前导航状态。 */
+    public void syncToolbar() {
+        try {
+            if (toolbar == null) {
+                return;
+            }
+            boolean hasBack = factoryStack.size() > 1;
+            toolbar.setNavigationIcon(hasBack ? R.drawable.ic_back : 0);
+            String last = navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
+            toolbar.setTitle("首页".equals(last) ? "屏连·副屏" : last);
+            // 等 Fragment 事务提交后再次强制同步，避免异步提交重置标题
+            toolbar.post(() -> {
+                if (toolbar != null) {
+                    toolbar.setNavigationIcon(factoryStack.size() > 1 ? R.drawable.ic_back : 0);
+                    String lastAgain = navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
+                    toolbar.setTitle("首页".equals(lastAgain) ? "屏连·副屏" : lastAgain);
+                }
+            });
+        } catch (Throwable e) {
+            // ignore
+        }
+    }
+
     public void setOnNavigationChangedListener(Runnable listener) {
         this.onNavigationChanged = listener;
     }
@@ -80,6 +103,8 @@ public class BreadcrumbManager {
                 }
                 showTop();
                 forceTitle();
+                State.log("popBreadcrumb -> 标题:" + (navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1))
+                        + " 层级:" + factoryStack.size());
             } else {
                 Fragment current = fragmentManager.findFragmentById(R.id.fragmentContainer);
                 if (current != null && current.getActivity() != null) {
@@ -123,21 +148,11 @@ public class BreadcrumbManager {
     }
 
     private void forceTitle() {
-        if (toolbar == null) {
-            return;
-        }
-        String last = navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
-        String title = "首页".equals(last) ? "屏连·副屏" : last;
-        toolbar.setTitle(title);
+        syncToolbar();
     }
 
     private void updateBreadcrumbView() {
-        if (toolbar != null) {
-            boolean hasBack = navigationPath.size() > 1;
-            toolbar.setNavigationIcon(hasBack ? R.drawable.ic_back : null);
-            String last = navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
-            toolbar.setTitle("首页".equals(last) ? "屏连·副屏" : last);
-        }
+        syncToolbar();
 
         breadcrumb.removeAllViews();
 

@@ -199,6 +199,9 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         super.onResume();
         // 设置 State.currentActivity 为当前的 MainActivity 实例
         State.currentActivity = new WeakReference<>(this);
+        if (breadcrumbManager != null) {
+            breadcrumbManager.syncToolbar();
+        }
         State.resumeJob();
         
         // 检查是否需要在应用打开时自动熄屏
