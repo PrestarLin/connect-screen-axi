@@ -3,6 +3,7 @@ package com.gitee.connect_screen;
 import android.app.Activity;
 import android.view.View;
 
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -25,7 +26,7 @@ public final class EdgeToEdgeUtil {
             if (insets == null) {
                 return WindowInsetsCompat.CONSUMED;
             }
-            WindowInsetsCompat bars = insets.getInsets(
+            Insets bars = insets.getInsets(
                     WindowInsetsCompat.Type.systemBars()
                             | WindowInsetsCompat.Type.displayCutout());
             v.setPadding(v.getPaddingLeft(), bars.top, v.getPaddingRight(), bars.bottom);
