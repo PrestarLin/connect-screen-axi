@@ -114,14 +114,22 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         toolbar.setTitle(R.string.app_name);
         toolbar.inflateMenu(R.menu.menu_main);
 
-        // 日志面板
+        // 日志面板：始终初始化（支持热切换显示方式）
         logPanel = findViewById(R.id.logPanel);
         logList = findViewById(R.id.logList);
-        int logMode = getSharedPreferences("settings", MODE_PRIVATE)
-                .getInt("log_display_mode", 0);
+        logList.setLayoutManager(new LinearLayoutManager(this));
+        logAdapter = new LogAdapter(State.logs);
+        logList.setAdapter(logAdapter);
+        findViewById(R.id.btnClearLog).setOnClickListener(v -> {
+            State.logs.clear();
+            logAdapter.notifyDataSetChanged();
+        });
+        findViewById(R.id.btnCollapseLog).setOnClickListener(v -> {
+            logPanel.setVisibility(View.GONE);
+        });
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_open_log) {
-                if (logMode == 0) {
+                if (logDisplayMode() == 0) {
                     toggleLogPanel();
                 } else {
                     if (!"运行日志".equals(breadcrumbManager.getCurrentTitle())) {
@@ -132,41 +140,10 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
             }
             return false;
         });
-        if (logMode == 0) {
-            logList.setLayoutManager(new LinearLayoutManager(this));
-            logAdapter = new LogAdapter(State.logs);
-            logList.setAdapter(logAdapter);
-            findViewById(R.id.btnClearLog).setOnClickListener(v -> {
-                State.logs.clear();
-                logAdapter.notifyDataSetChanged();
-            });
-            findViewById(R.id.btnCollapseLog).setOnClickListener(v -> {
-                logPanel.setVisibility(View.GONE);
-            });
-        }
 
         breadcrumbManager = new BreadcrumbManager(this, getSupportFragmentManager(), findViewById(R.id.breadcrumb));
         State.breadcrumbManager = breadcrumbManager;
-        breadcrumbManager.setToolbar(toolbar);
         breadcrumbManager.pushBreadcrumb("首页", () -> new HomeFragment());
-
-        // 根据实际显示的 Fragment 驱动工具栏（决定性地修复标题/返回键残留）
-        getSupportFragmentManager().registerFragmentLifecycleCallbacks(
-                new androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
-                    @Override
-                    public void onFragmentResumed(@NonNull androidx.fragment.app.FragmentManager fm,
-                                                  @NonNull androidx.fragment.app.Fragment f) {
-                        syncToolbarForFragment(f);
-                    }
-
-                    @Override
-                    public void onFragmentViewCreated(@NonNull androidx.fragment.app.FragmentManager fm,
-                                                      @NonNull androidx.fragment.app.Fragment f,
-                                                      @NonNull View v,
-                                                      @Nullable Bundle savedInstanceState) {
-                        syncToolbarForFragment(f);
-                    }
-                }, true);
 
         // 预测性返回：有下级页面时拦截并弹栈，根层交给系统（有返回动画）
         androidx.activity.OnBackPressedCallback backCallback =
@@ -220,39 +197,10 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
         super.onResume();
         // 设置 State.currentActivity 为当前的 MainActivity 实例
         State.currentActivity = new WeakReference<>(this);
-        if (breadcrumbManager != null) {
-            breadcrumbManager.syncToolbar();
-        }
         State.resumeJob();
         
         // 检查是否需要在应用打开时自动熄屏
         checkAutoScreenOffOnAppOpen();
-    }
-
-    /** 依据实际显示的 Fragment 驱动工具栏（决定性修复标题/返回键残留）。 */
-    private void syncToolbarForFragment(androidx.fragment.app.Fragment f) {
-        try {
-            androidx.appcompat.widget.Toolbar tb = findViewById(R.id.toolbar);
-            if (tb == null || f == null) {
-                return;
-            }
-            if (f instanceof HomeFragment) {
-                tb.setNavigationIcon(0);
-                tb.setTitle("屏连·副屏");
-                return;
-            }
-            tb.setNavigationIcon(R.drawable.ic_back);
-            String title = "";
-            if (State.breadcrumbManager != null) {
-                title = State.breadcrumbManager.getCurrentTitle();
-            }
-            if (title == null || title.isEmpty() || "首页".equals(title)) {
-                title = "屏连·副屏";
-            }
-            tb.setTitle(title);
-        } catch (Throwable e) {
-            // ignore
-        }
     }
 
     @Override
@@ -366,6 +314,19 @@ public class MainActivity extends AppCompatActivity implements IMainActivity {
             logAdapter.notifyDataSetChanged();
             logList.scrollToPosition(logAdapter.getItemCount() - 1);
         }
+    }
+
+    private int logDisplayMode() {
+        return getSharedPreferences("settings", MODE_PRIVATE).getInt("log_display_mode", 0);
+    }
+
+    /** 日志显示方式热生效：设置页切换后外部调用。 */
+    public void applyLogMode() {
+        runOnUiThread(() -> {
+            if (logPanel != null && logPanel.getVisibility() == View.VISIBLE && logDisplayMode() != 0) {
+                logPanel.setVisibility(View.GONE);
+            }
+        });
     }
 
     // 更新日志列表的方法

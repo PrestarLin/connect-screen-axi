@@ -2,7 +2,6 @@ package com.gitee.connect_screen;
 
 import android.content.Context;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -10,12 +9,15 @@ import androidx.fragment.app.FragmentManager;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 页面导航管理：以工厂栈方式维护页面层级，push 进入、pop 返回。
+ * 不负责顶部工具栏标题/返回键（已统一为固定应用名 + 日志按钮）。
+ */
 public class BreadcrumbManager {
     private final LinearLayout breadcrumb;
     private final List<String> navigationPath = new ArrayList<>();
     private final List<FragmentFactory> factoryStack = new ArrayList<>();
     private final FragmentManager fragmentManager;
-    private androidx.appcompat.widget.Toolbar toolbar;
     private Runnable onNavigationChanged;
 
     public BreadcrumbManager(Context context, FragmentManager fragmentManager, LinearLayout breadcrumb) {
@@ -23,12 +25,7 @@ public class BreadcrumbManager {
         this.fragmentManager = fragmentManager;
     }
 
-    public void setToolbar(androidx.appcompat.widget.Toolbar toolbar) {
-        this.toolbar = toolbar;
-        toolbar.setNavigationOnClickListener(v -> popBreadcrumb());
-    }
-
-    /** 当前导航页标题（用于判重）。 */
+    /** 当前导航页标题（用于判重，如日志页去重）。 */
     public String getCurrentTitle() {
         return navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
     }
@@ -36,42 +33,6 @@ public class BreadcrumbManager {
     /** 是否有下级页面（用于预测性返回回调开关）。 */
     public boolean hasBackNavigation() {
         return factoryStack.size() > 1;
-    }
-
-    /** 强制把工具栏设为首页状态（无返回键 + 标题"屏连·副屏"）。 */
-    public void forceHomeToolbar() {
-        try {
-            if (toolbar == null) {
-                return;
-            }
-            toolbar.setNavigationIcon(0);
-            toolbar.setTitle("屏连·副屏");
-        } catch (Throwable e) {
-            // ignore
-        }
-    }
-
-    /** 强制同步工具栏（标题 + 返回键）到当前导航状态。 */
-    public void syncToolbar() {
-        try {
-            if (toolbar == null) {
-                return;
-            }
-            boolean hasBack = factoryStack.size() > 1;
-            toolbar.setNavigationIcon(hasBack ? R.drawable.ic_back : 0);
-            String last = navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
-            toolbar.setTitle("首页".equals(last) ? "屏连·副屏" : last);
-            // 等 Fragment 事务提交后再次强制同步，避免异步提交重置标题
-            toolbar.post(() -> {
-                if (toolbar != null) {
-                    toolbar.setNavigationIcon(factoryStack.size() > 1 ? R.drawable.ic_back : 0);
-                    String lastAgain = navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1);
-                    toolbar.setTitle("首页".equals(lastAgain) ? "屏连·副屏" : lastAgain);
-                }
-            });
-        } catch (Throwable e) {
-            // ignore
-        }
     }
 
     public void setOnNavigationChangedListener(Runnable listener) {
@@ -84,10 +45,7 @@ public class BreadcrumbManager {
         }
     }
 
-    /**
-     * 压入一个新页面。depth 用自定义地管理，不使用 FragmentManager 的退栈，
-     * 避免 popBackStack() 清空整条栈或刷新时重建到陈旧的页面。
-     */
+    /** 压入一个新页面。 */
     public void pushBreadcrumb(String newPath, FragmentFactory fragmentFactory) {
         try {
             if (!newPath.isEmpty() && !newPath.equals(getCurrentTitle())) {
@@ -95,15 +53,12 @@ public class BreadcrumbManager {
             }
             factoryStack.add(fragmentFactory);
             showTop();
-            forceTitle();
         } catch (Throwable e) {
             // ignore
         }
     }
 
-    /**
-     * 回退一层。始终以 factoryStack 栈顶为准重建页面，保证回到正确的上一页。
-     */
+    /** 回退一层。 */
     public void popBreadcrumb() {
         try {
             if (factoryStack.size() > 1) {
@@ -115,9 +70,6 @@ public class BreadcrumbManager {
                     navigationPath.add("首页");
                 }
                 showTop();
-                forceTitle();
-                State.log("popBreadcrumb -> 标题:" + (navigationPath.isEmpty() ? "" : navigationPath.get(navigationPath.size() - 1))
-                        + " 层级:" + factoryStack.size());
             } else {
                 Fragment current = fragmentManager.findFragmentById(R.id.fragmentContainer);
                 if (current != null && current.getActivity() != null) {
@@ -129,10 +81,7 @@ public class BreadcrumbManager {
         }
     }
 
-    /**
-     * 刷新当前页面（例如 Shizuku 授权、任务完成、从其它界面返回后）。
-     * 无论之前访问过哪个页面，都只重建当前栈顶，避免跳到陈旧的页面。
-     */
+    /** 刷新当前页面。 */
     public void refreshCurrentFragment() {
         try {
             if (factoryStack.isEmpty()) {
@@ -142,7 +91,6 @@ public class BreadcrumbManager {
                 return;
             }
             showTop();
-            forceTitle();
         } catch (Exception e) {
             // ignore
         }
@@ -156,36 +104,7 @@ public class BreadcrumbManager {
         fragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
-        updateBreadcrumbView();
         notifyNavigationChanged();
-    }
-
-    private void forceTitle() {
-        syncToolbar();
-    }
-
-    private void updateBreadcrumbView() {
-        syncToolbar();
-
-        breadcrumb.removeAllViews();
-
-        for (int i = 0; i < navigationPath.size(); i++) {
-            TextView separator = new TextView(breadcrumb.getContext());
-            separator.setText(" > ");
-            breadcrumb.addView(separator);
-
-            TextView pathView = new TextView(breadcrumb.getContext());
-            pathView.setText(navigationPath.get(i));
-            pathView.setTextColor(breadcrumb.getContext().getResources().getColor(R.color.blue));
-            final int index = i;
-            pathView.setClickable(true);
-            pathView.setOnClickListener(v -> {
-                while (navigationPath.size() > index + 1) {
-                    popBreadcrumb();
-                }
-            });
-            breadcrumb.addView(pathView);
-        }
     }
 
     public LinearLayout getBreadcrumbView() {

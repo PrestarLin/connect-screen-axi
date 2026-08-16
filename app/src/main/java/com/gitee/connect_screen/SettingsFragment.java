@@ -170,6 +170,10 @@ public class SettingsFragment extends Fragment {
             requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
                     .edit().putInt("log_display_mode", val).apply();
             State.log("日志显示切换为: " + (val == 1 ? "全屏页" : "底部浮动"));
+            // 热生效：通知 MainActivity 立即应用
+            if (State.currentActivity != null && State.currentActivity.get() instanceof MainActivity) {
+                ((MainActivity) State.currentActivity.get()).applyLogMode();
+            }
         });
     }
 
