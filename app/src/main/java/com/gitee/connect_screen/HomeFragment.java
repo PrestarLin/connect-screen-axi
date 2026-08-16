@@ -60,6 +60,10 @@ public class HomeFragment extends Fragment {
         View shizukuDot = view.findViewById(R.id.shizukuDot);
         updateShizukuStatus(shizukuStatus, shizukuDot, shizukuPermissionBtn);
 
+        // 点击 Shizuku 药丸弹出授权方式选择
+        View shizukuPill = view.findViewById(R.id.shizukuPill);
+        shizukuPill.setOnClickListener(v -> showAuthModeDialog());
+
         view.findViewById(R.id.cardSingleApp).setOnClickListener(v ->
                 State.breadcrumbManager.pushBreadcrumb("屏幕", () -> new DisplayListFragment()));
 
@@ -100,13 +104,8 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.tileSettings).setOnClickListener(v -> {
-            if (ShizukuUtils.hasPermission()) {
-                State.breadcrumbManager.pushBreadcrumb("设置", () -> new SettingsFragment());
-            } else {
-                Toast.makeText(requireContext(), "需要先授权 Shizuku", Toast.LENGTH_SHORT).show();
-            }
-        });
+        view.findViewById(R.id.tileSettings).setOnClickListener(v ->
+                State.breadcrumbManager.pushBreadcrumb("设置", () -> new SettingsFragment()));
 
         view.findViewById(R.id.tileAbout).setOnClickListener(v ->
                 State.breadcrumbManager.pushBreadcrumb("关于", () -> new AboutFragment()));
@@ -287,5 +286,29 @@ public class HomeFragment extends Fragment {
         }
 
         statusView.setText(status);
+    }
+
+    private void showAuthModeDialog() {
+        int currentMode = QtiOverride.authMode(requireContext());
+        String[] modes = {"自动", "Root", "Shizuku"};
+        final int[] values = {QtiOverride.MODE_AUTO, QtiOverride.MODE_ROOT, QtiOverride.MODE_SHIZUKU};
+        int checked = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] == currentMode) {
+                checked = i;
+                break;
+            }
+        }
+        new AlertDialog.Builder(requireContext())
+                .setTitle("授权方式")
+                .setSingleChoiceItems(modes, checked, (dialog, which) -> {
+                    int selected = values[which];
+                    requireContext().getSharedPreferences(QtiOverride.PREF, Context.MODE_PRIVATE)
+                            .edit().putInt(QtiOverride.KEY_AUTH, selected).apply();
+                    State.log("授权方式切换为: " + QtiOverride.authModeName(selected));
+                    dialog.dismiss();
+                })
+                .setNegativeButton("取消", null)
+                .show();
     }
 }
