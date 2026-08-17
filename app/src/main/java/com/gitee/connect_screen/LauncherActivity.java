@@ -21,9 +21,6 @@ import android.view.WindowManager;
 import android.os.Build;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
-import android.content.res.Resources;
-import android.content.res.Configuration;
-import android.util.DisplayMetrics;
 import android.widget.Toast;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -141,17 +138,6 @@ public class LauncherActivity extends AppCompatActivity {
             getSharedPreferences("app_preferences", MODE_PRIVATE)
         );
         recyclerView.setAdapter(adapter);
-        
-        // 添加设置 DPI 的代码
-        Resources resources = getResources();
-        Configuration configuration = resources.getConfiguration();
-        DisplayMetrics displayMetrics = resources.getDisplayMetrics();
-        
-        displayMetrics.densityDpi = 320; 
-        configuration.densityDpi = 320;
-        
-        // 应用新的配置
-        resources.updateConfiguration(configuration, displayMetrics);
 
         // 添加模拟熄屏按钮的点击监听器
         findViewById(R.id.btn_screen_off).setOnClickListener(v -> {

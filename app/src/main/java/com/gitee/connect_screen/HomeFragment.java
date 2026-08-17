@@ -39,6 +39,9 @@ public class HomeFragment extends Fragment {
     private Button btnExitProjection;
     private TextView recentAppsTitle;
     private LinearLayout recentAppsRow;
+    private TextView shizukuStatus;
+    private View shizukuDot;
+    private Button shizukuPermissionBtn;
 
     @Nullable
     @Override
@@ -51,14 +54,14 @@ public class HomeFragment extends Fragment {
         recentAppsTitle = view.findViewById(R.id.recentAppsTitle);
         recentAppsRow = view.findViewById(R.id.recentAppsRow);
 
-        Button shizukuPermissionBtn = view.findViewById(R.id.shizukuPermissionBtn);
+        shizukuPermissionBtn = view.findViewById(R.id.shizukuPermissionBtn);
         shizukuPermissionBtn.setOnClickListener(v -> {
             State.startNewJob(new AcquireShizuku());
         });
 
-        TextView shizukuStatus = view.findViewById(R.id.shizukuStatus);
-        View shizukuDot = view.findViewById(R.id.shizukuDot);
-        updateShizukuStatus(shizukuStatus, shizukuDot, shizukuPermissionBtn);
+        shizukuStatus = view.findViewById(R.id.shizukuStatus);
+        shizukuDot = view.findViewById(R.id.shizukuDot);
+        updateShizukuStatus();
 
         // 点击 Shizuku 药丸弹出授权方式选择
         View shizukuPill = view.findViewById(R.id.shizukuPill);
@@ -123,6 +126,7 @@ public class HomeFragment extends Fragment {
         super.onResume();
         refreshConnectedDisplay();
         refreshRecentApps();
+        updateShizukuStatus();
     }
 
     private void refreshConnectedDisplay() {
@@ -259,14 +263,15 @@ public class HomeFragment extends Fragment {
             .show();
     }
 
-    private void updateShizukuStatus(TextView statusView, View dot, Button permissionBtn) {
+    private void updateShizukuStatus() {
+        if (shizukuStatus == null || shizukuDot == null || shizukuPermissionBtn == null) {
+            return;
+        }
         int authMode = QtiOverride.authMode(requireContext());
-        String authName = QtiOverride.authModeName(authMode);
 
         boolean started = ShizukuUtils.hasShizukuStarted();
         boolean hasPermission = ShizukuUtils.hasPermission();
 
-        // 更新权限前缀文字
         TextView prefixView = getView() != null ? getView().findViewById(R.id.shizukuStatusPrefix) : null;
         if (prefixView != null) {
             prefixView.setText("授权方式: ");
@@ -274,48 +279,51 @@ public class HomeFragment extends Fragment {
 
         int dotColor;
         String status;
-        // 根据授权模式显示状态
         switch (authMode) {
             case QtiOverride.MODE_ROOT:
                 dotColor = requireContext().getColor(R.color.md_secondary);
                 status = "Root";
-                permissionBtn.setVisibility(View.GONE);
+                shizukuPermissionBtn.setVisibility(View.GONE);
                 break;
             case QtiOverride.MODE_SHIZUKU:
                 if (!started) {
                     dotColor = requireContext().getColor(R.color.md_error);
                     status = "Shizuku 未启动";
-                    permissionBtn.setVisibility(View.GONE);
+                    shizukuPermissionBtn.setVisibility(View.GONE);
                 } else if (!hasPermission) {
                     dotColor = requireContext().getColor(R.color.md_tertiary);
                     status = "Shizuku 未授权";
-                    permissionBtn.setVisibility(View.VISIBLE);
+                    shizukuPermissionBtn.setVisibility(View.VISIBLE);
                 } else {
                     dotColor = requireContext().getColor(R.color.md_secondary);
                     status = "Shizuku 已授权";
-                    permissionBtn.setVisibility(View.GONE);
+                    shizukuPermissionBtn.setVisibility(View.GONE);
                 }
                 break;
             default: // AUTO
-                if (hasPermission) {
+                if (started && hasPermission) {
                     dotColor = requireContext().getColor(R.color.md_secondary);
                     status = "自动 (Shizuku)";
-                    permissionBtn.setVisibility(View.GONE);
+                    shizukuPermissionBtn.setVisibility(View.GONE);
+                } else if (started && !hasPermission) {
+                    dotColor = requireContext().getColor(R.color.md_tertiary);
+                    status = "自动 (Root)";
+                    shizukuPermissionBtn.setVisibility(View.VISIBLE);
                 } else {
                     dotColor = requireContext().getColor(R.color.md_secondary);
                     status = "自动 (Root)";
-                    permissionBtn.setVisibility(View.GONE);
+                    shizukuPermissionBtn.setVisibility(View.GONE);
                 }
                 break;
         }
 
         try {
-            GradientDrawable d = (GradientDrawable) dot.getBackground();
+            GradientDrawable d = (GradientDrawable) shizukuDot.getBackground();
             d.setColor(dotColor);
         } catch (Throwable ignored) {
         }
 
-        statusView.setText(status);
+        shizukuStatus.setText(status);
     }
 
     private void showAuthModeDialog() {
@@ -337,6 +345,7 @@ public class HomeFragment extends Fragment {
                             .edit().putInt(QtiOverride.KEY_AUTH, selected).apply();
                     State.log("授权方式切换为: " + QtiOverride.authModeName(selected));
                     dialog.dismiss();
+                    updateShizukuStatus();
                 })
                 .setNegativeButton("取消", null)
                 .show();
