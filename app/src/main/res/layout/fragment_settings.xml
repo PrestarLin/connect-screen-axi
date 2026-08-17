@@ -473,6 +473,32 @@
                         android:layout_height="wrap_content" />
                 </LinearLayout>
 
+                <RadioGroup
+                    android:id="@+id/realScreenOffMethodGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="8dp">
+
+                    <RadioButton
+                        android:id="@+id/rbRealScreenOffSystemLock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="系统锁屏"
+                        android:textColor="@color/md_on_surface" />
+
+                    <RadioButton
+                        android:id="@+id/rbRealScreenOffDisplayPower"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:checked="true"
+                        android:text="显示面板电源"
+                        android:textColor="@color/md_on_surface" />
+                </RadioGroup>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

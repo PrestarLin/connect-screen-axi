@@ -17,4 +17,6 @@ interface IUserService {
     void stopListenVolumeKey() = 6;
 
     boolean isLoopActive() = 7;
+
+    void goToSleep() = 8;
 }

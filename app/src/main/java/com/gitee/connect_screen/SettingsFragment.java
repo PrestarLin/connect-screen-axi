@@ -53,6 +53,7 @@ public class SettingsFragment extends Fragment {
     private SwitchMaterial cbDisableUsbAudio;
     private SwitchMaterial cbUseRealScreenOff;
     private SwitchMaterial cbAllowForceScreenOff;
+    private RadioGroup realScreenOffMethodGroup;
     private SwitchMaterial cbMouseMiddleButtonSwitch;
     private SwitchMaterial cbStayOnWhilePlugged;
     private SwitchMaterial cbAutoScreenOffOnAppOpen;
@@ -77,6 +78,7 @@ public class SettingsFragment extends Fragment {
         cbDisableUsbAudio = view.findViewById(R.id.cbDisableUsbAudio);
         cbUseRealScreenOff = view.findViewById(R.id.cbUseRealScreenOff);
         cbAllowForceScreenOff = view.findViewById(R.id.cbAllowForceScreenOff);
+        realScreenOffMethodGroup = view.findViewById(R.id.realScreenOffMethodGroup);
         cbMouseMiddleButtonSwitch = view.findViewById(R.id.cbMouseMiddleButtonSwitch);
         cbStayOnWhilePlugged = view.findViewById(R.id.cbStayOnWhilePlugged);
         cbAutoScreenOffOnAppOpen = view.findViewById(R.id.cbAutoScreenOffOnAppOpen);
@@ -99,6 +101,7 @@ public class SettingsFragment extends Fragment {
             setupEnableNonResizableCheckbox();
             setupDisableUsbAudioCheckbox();
             setupUseRealScreenOffCheckbox();
+            setupRealScreenOffMethod();
             setupAllowForceScreenOffCheckbox();
             setupMouseMiddleButtonSwitchCheckbox();
             setupStayOnWhilePluggedCheckbox();
@@ -482,6 +485,27 @@ public class SettingsFragment extends Fragment {
             requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
                     .edit()
                     .putBoolean("use_real_screen_off", isChecked)
+                    .apply();
+        });
+    }
+
+    private void setupRealScreenOffMethod() {
+        // 读取保存的设置，默认使用显示面板电源
+        String method = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
+                .getString("real_screen_off_method", "display_power");
+
+        if ("system_lock".equals(method)) {
+            realScreenOffMethodGroup.check(R.id.rbRealScreenOffSystemLock);
+        } else {
+            realScreenOffMethodGroup.check(R.id.rbRealScreenOffDisplayPower);
+        }
+
+        realScreenOffMethodGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            String selected = checkedId == R.id.rbRealScreenOffSystemLock
+                    ? "system_lock" : "display_power";
+            requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
+                    .edit()
+                    .putString("real_screen_off_method", selected)
                     .apply();
         });
     }

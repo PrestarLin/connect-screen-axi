@@ -18,6 +18,8 @@ import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.MotionEventHidden;
 import android.view.Surface;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -119,12 +121,32 @@ public class PureBlackActivity extends AppCompatActivity {
             window.setStatusBarColor(Color.TRANSPARENT);
             window.setNavigationBarColor(Color.TRANSPARENT);
 
+            // 沉浸模式：隐藏状态栏和导航栏（小白条）
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowInsetsController insetsController = window.getInsetsController();
+                if (insetsController != null) {
+                    insetsController.hide(WindowInsets.Type.systemBars());
+                    insetsController.setSystemBarsBehavior(
+                            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                }
+            }
+
             // 设置纯黑背景
             View view = new View(this);
             view.setFocusable(true);
             view.setFocusableInTouchMode(true);
             view.setBackgroundColor(Color.BLACK);
             setContentView(view);
+
+            // API 30 以下使用旧版沉浸模式标志
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                view.setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            }
             
             // 添加鼠标捕获
             view.setOnGenericMotionListener((v, event) -> {
@@ -257,7 +279,14 @@ public class PureBlackActivity extends AppCompatActivity {
         if (useRealScreenOff && State.userService != null) {
             try {
                 State.userService.startListenVolumeKey();
-                State.userService.setScreenPower(SurfaceControl.POWER_MODE_OFF);
+                String method = getSharedPreferences("settings", Context.MODE_PRIVATE)
+                        .getString("real_screen_off_method", "display_power");
+                if ("system_lock".equals(method)) {
+                    State.log("真实熄屏：使用系统锁屏");
+                    State.userService.goToSleep();
+                } else {
+                    State.userService.setScreenPower(SurfaceControl.POWER_MODE_OFF);
+                }
             } catch (RemoteException e) {
                 State.log("powerOffScreen failed: " + e.getMessage());
             }
