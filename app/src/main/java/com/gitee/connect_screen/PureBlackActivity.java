@@ -77,19 +77,6 @@ public class PureBlackActivity extends AppCompatActivity {
         
         super.onCreate(savedInstanceState);
         
-        // 如果使用真实熄屏，立即设置窗口为完全透明
-        if (useRealScreenOff) {
-            Window window = getWindow();
-            // 设置窗口背景为透明
-            window.setBackgroundDrawableResource(android.R.color.transparent);
-            // 禁用所有动画
-            window.setWindowAnimations(0);
-            // 设置一个空的视图
-            View emptyView = new View(this);
-            emptyView.setBackgroundColor(Color.TRANSPARENT);
-            setContentView(emptyView);
-        }
-        
         State.isInPureBlackActivity = this;
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
@@ -115,21 +102,9 @@ public class PureBlackActivity extends AppCompatActivity {
             window.setAttributes(layoutParams);
         }
 
-        // 如果使用真实熄屏，则不显示黑色背景，直接让屏幕熄灭
-        if (!useRealScreenOff) {
             // 设置状态栏和导航栏透明
             window.setStatusBarColor(Color.TRANSPARENT);
             window.setNavigationBarColor(Color.TRANSPARENT);
-
-            // 沉浸模式：隐藏状态栏和导航栏（小白条）
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                WindowInsetsController insetsController = window.getInsetsController();
-                if (insetsController != null) {
-                    insetsController.hide(WindowInsets.Type.systemBars());
-                    insetsController.setSystemBarsBehavior(
-                            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-                }
-            }
 
             // 设置纯黑背景
             View view = new View(this);
@@ -138,8 +113,15 @@ public class PureBlackActivity extends AppCompatActivity {
             view.setBackgroundColor(Color.BLACK);
             setContentView(view);
 
-            // API 30 以下使用旧版沉浸模式标志
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            // 沉浸模式：setContentView 之后再隐藏，否则会被系统重置（小白条）
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowInsetsController insetsController = window.getInsetsController();
+                if (insetsController != null) {
+                    insetsController.hide(WindowInsets.Type.systemBars());
+                    insetsController.setSystemBarsBehavior(
+                            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                }
+            } else {
                 view.setSystemUiVisibility(
                         View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -221,8 +203,7 @@ public class PureBlackActivity extends AppCompatActivity {
                 finish();
                 return true;
             });
-        }
-       if (ShizukuUtils.hasPermission()) {
+        if (ShizukuUtils.hasPermission()) {
            inputManager = ServiceUtils.getInputManager();
            TouchpadActivity.setFocus(inputManager, State.lastSingleAppDisplay);
            if(TouchpadAccessibilityService.getInstance() == null) {
@@ -294,14 +275,36 @@ public class PureBlackActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            // 重新隐藏系统栏，防止焦点变化后小白条重新出现
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowInsetsController insetsController = getWindow().getInsetsController();
+                if (insetsController != null) {
+                    insetsController.hide(WindowInsets.Type.systemBars());
+                }
+            } else {
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            }
+        }
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         State.isInPureBlackActivity = null;
         if (useRealScreenOff && State.userService != null) {
             try {
-                State.log("PureBlackActivity onDestroy, useRealScreenOff=true, loop continues running");
-            } catch (Exception e) {
-                // ignore
+                State.userService.stopListenVolumeKey();
+                State.userService.setScreenPower(SurfaceControl.POWER_MODE_NORMAL);
+            } catch (RemoteException e) {
+                State.log("powerUpScreen failed: " + e.getMessage());
             }
         }
     }

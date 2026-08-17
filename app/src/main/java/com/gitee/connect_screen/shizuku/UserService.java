@@ -23,10 +23,6 @@ public class UserService extends IUserService.Stub  {
     private volatile boolean listenVolumeKey = false;
     private Process listenVolumeKeyProcess;
     private Thread volumeKeyThread;
-    private volatile boolean keepScreenOff = false;
-    private volatile boolean userExited = false;
-    private Thread screenOffLoopThread;
-    private static final long SCREEN_OFF_CHECK_INTERVAL = 100; // 检查间隔（毫秒），缩短为100ms以更快响应系统唤醒
 
     public UserService() {
         Log.i("UserService", "constructor");
@@ -153,39 +149,12 @@ public class UserService extends IUserService.Stub  {
     }
 
     public void startListenVolumeKey() throws RemoteException {
-        if (listenVolumeKey && keepScreenOff && screenOffLoopThread != null && screenOffLoopThread.isAlive()) {
-            Log.i("UserService", "startListenVolumeKey: already listening and loop is running, keepScreenOff=" + keepScreenOff);
+        if (listenVolumeKey) {
+            Log.i("UserService", "startListenVolumeKey: already listening");
             return;
         }
-        Log.i("UserService", "startListenVolumeKey: starting new loop, previous listenVolumeKey=" + listenVolumeKey + " keepScreenOff=" + keepScreenOff);
-        userExited = false;
+        Log.i("UserService", "startListenVolumeKey: starting volume key listener");
         listenVolumeKey = true;
-        keepScreenOff = true;
-        
-        // 启动循环熄屏线程（先启动，确保即使音量键监听失败也能保持熄屏）
-        screenOffLoopThread = new Thread(() -> {
-            Log.i("UserService", "screen off loop started");
-            while (keepScreenOff) {
-                try {
-                    setScreenPower(SurfaceControl.POWER_MODE_OFF);
-                    Thread.sleep(SCREEN_OFF_CHECK_INTERVAL);
-                } catch (InterruptedException e) {
-                    Log.i("UserService", "screen off loop interrupted");
-                    break;
-                } catch (Throwable e) {
-                    // 捕获所有异常，防止循环线程崩溃
-                    Log.e("UserService", "screen off loop error, continuing...", e);
-                    try {
-                        Thread.sleep(SCREEN_OFF_CHECK_INTERVAL);
-                    } catch (InterruptedException ie) {
-                        Log.i("UserService", "screen off loop interrupted during error recovery");
-                        break;
-                    }
-                }
-            }
-            Log.i("UserService", "screen off loop stopped");
-        });
-        screenOffLoopThread.start();
         
         // 启动音量键监听线程
         Thread thread = new Thread(() -> {
@@ -201,8 +170,6 @@ public class UserService extends IUserService.Stub  {
                     if (!line.endsWith("0000 0000 00000000") &&
                         (line.endsWith("0001 0072 00000001") || line.endsWith("0001 0073 00000001"))) {
                         Log.i("UserService", "volume key pressed, exiting pure black activity");
-                        userExited = true;
-                        keepScreenOff = false;
                         setScreenPower(SurfaceControl.POWER_MODE_NORMAL);
                         if (context != null) {
                             Intent intent = new Intent("com.gitee.connect_screen.EXIT_PURE_BLACK");
@@ -232,18 +199,6 @@ public class UserService extends IUserService.Stub  {
     public void stopListenVolumeKey() {
         Log.i("UserService", "stopListenVolumeKey called");
         listenVolumeKey = false;
-        keepScreenOff = false;
-        
-        // 停止循环熄屏线程
-        if (screenOffLoopThread != null) {
-            screenOffLoopThread.interrupt();
-            try {
-                screenOffLoopThread.join(1000);
-            } catch (InterruptedException e) {
-                Log.e("UserService", "join screenOffLoopThread failed", e);
-            }
-            screenOffLoopThread = null;
-        }
         
         // 停止音量键监听进程和线程
         if (listenVolumeKeyProcess != null) {
@@ -261,7 +216,7 @@ public class UserService extends IUserService.Stub  {
     }
 
     public boolean isLoopActive() {
-        return !userExited && listenVolumeKey;
+        return listenVolumeKey;
     }
 
     public void goToSleep() {
