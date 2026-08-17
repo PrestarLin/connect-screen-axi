@@ -114,6 +114,7 @@ public class PureBlackActivity extends AppCompatActivity {
             setContentView(view);
 
             // 沉浸模式：setContentView 之后再隐藏，否则会被系统重置（小白条）
+            // 使用原始整数值（SDK 36 中 SYSTEM_UI_FLAG 常量已移除）
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 WindowInsetsController insetsController = window.getInsetsController();
                 if (insetsController != null) {
@@ -121,14 +122,14 @@ public class PureBlackActivity extends AppCompatActivity {
                     insetsController.setSystemBarsBehavior(
                             WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
                 }
-            } else {
-                view.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
             }
+            // 同时使用旧版 API（原始整数值）作为兜底，确保所有 API 级别都能隐藏导航栏
+            getWindow().getDecorView().setSystemUiVisibility(
+                    0x00000002 |  // View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    0x00001000 |  // View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    0x00000004 |  // View.SYSTEM_UI_FLAG_FULLSCREEN
+                    0x00000200 |  // View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    0x00000100);  // View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             
             // 添加鼠标捕获
             view.setOnGenericMotionListener((v, event) -> {
@@ -284,14 +285,13 @@ public class PureBlackActivity extends AppCompatActivity {
                 if (insetsController != null) {
                     insetsController.hide(WindowInsets.Type.systemBars());
                 }
-            } else {
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
             }
+            getWindow().getDecorView().setSystemUiVisibility(
+                    0x00000002 |  // View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    0x00001000 |  // View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    0x00000004 |  // View.SYSTEM_UI_FLAG_FULLSCREEN
+                    0x00000200 |  // View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    0x00000100);  // View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         }
     }
 
