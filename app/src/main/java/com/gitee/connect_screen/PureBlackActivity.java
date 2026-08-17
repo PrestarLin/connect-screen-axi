@@ -275,7 +275,7 @@ public class PureBlackActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onWindowFocusChanged(boolean hasFocus) {
+    public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
             // 重新隐藏系统栏，防止焦点变化后小白条重新出现
