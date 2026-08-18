@@ -150,6 +150,18 @@ public class UserService extends IUserService.Stub  {
                 Log.i("UserService", "setDisplayPowerMode fallback success=" + succeeded);
             }
         }
+        // 最终兜底：通过 shell 执行 input keyevent 26（电源键切换）
+        // 在 ColorOS/OxygenOS 等 OEM ROM 上，上述反射 API 可能被移除，但 shell input keyevent 始终有效
+        if (!succeeded) {
+            Log.i("UserService", "trying input keyevent 26 (shell) as final fallback");
+            try {
+                Runtime.getRuntime().exec("input keyevent 26");
+                succeeded = true;
+                Log.i("UserService", "input keyevent 26 executed");
+            } catch (Throwable e) {
+                Log.e("UserService", "input keyevent 26 failed", e);
+            }
+        }
         if (!succeeded) {
             Log.e("UserService", "All methods to set screen power failed");
         }
@@ -335,6 +347,15 @@ public class UserService extends IUserService.Stub  {
     }
 
     public void goToSleep() {
+        Log.i("UserService", "goToSleep: trying input keyevent 26 (shell)");
+        try {
+            Runtime.getRuntime().exec("input keyevent 26");
+            Log.i("UserService", "goToSleep: input keyevent 26 executed");
+            return;
+        } catch (Throwable e) {
+            Log.e("UserService", "goToSleep via input keyevent failed", e);
+        }
+        // 回退到注入 KEYCODE_POWER
         Log.i("UserService", "goToSleep: injecting KEYCODE_POWER");
         try {
             android.hardware.input.IInputManager inputManager =
@@ -349,7 +370,7 @@ public class UserService extends IUserService.Stub  {
             inputManager.injectInputEvent(up, 0);
             Log.i("UserService", "goToSleep: power key injected");
         } catch (Throwable e) {
-            Log.e("UserService", "goToSleep failed", e);
+            Log.e("UserService", "goToSleep via KEYCODE_POWER also failed", e);
         }
     }
 }
