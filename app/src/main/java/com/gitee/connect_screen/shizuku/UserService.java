@@ -23,6 +23,10 @@ public class UserService extends IUserService.Stub  {
     private volatile boolean listenVolumeKey = false;
     private Process listenVolumeKeyProcess;
     private Thread volumeKeyThread;
+    private volatile boolean keepScreenOff = false;
+    private Thread screenOffLoopThread;
+    private static final long SCREEN_OFF_CHECK_INTERVAL = 1000; // 保持熄屏的检查间隔（毫秒）
+    private int savedStayOnWhilePluggedIn = -1;
 
     public UserService() {
         Log.i("UserService", "constructor");
@@ -102,30 +106,34 @@ public class UserService extends IUserService.Stub  {
             IDisplayManager displayManager = IDisplayManager.Stub.asInterface(SystemServiceHelper.getSystemService(Context.DISPLAY_SERVICE));
             if (powerMode == SurfaceControl.POWER_MODE_OFF) {
                 try {
-                    displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, false);
-                    Log.i("UserService", "requestDisplayPower by bool");
-                    succeeded = true;
+                    boolean result = displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, false);
+                    Log.i("UserService", "requestDisplayPower by bool, result=" + result);
+                    succeeded = result;
                 } catch (Throwable e) {
                     Log.e("UserService", "requestDisplayPower(bool) failed", e);
+                }
+                if (!succeeded) {
                     try {
-                        displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, SurfaceControl.POWER_MODE_OFF);
-                        Log.i("UserService", "requestDisplayPower by int");
-                        succeeded = true;
+                        boolean result2 = displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, SurfaceControl.POWER_MODE_OFF);
+                        Log.i("UserService", "requestDisplayPower by int, result=" + result2);
+                        succeeded = result2;
                     } catch (Throwable e2) {
                         Log.e("UserService", "requestDisplayPower(int) also failed", e2);
                     }
                 }
             } else {
                 try {
-                    displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, true);
-                    Log.i("UserService", "requestDisplayPower by bool");
-                    succeeded = true;
+                    boolean result = displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, true);
+                    Log.i("UserService", "requestDisplayPower by bool, result=" + result);
+                    succeeded = result;
                 } catch (Throwable e) {
                     Log.e("UserService", "requestDisplayPower(bool) failed", e);
+                }
+                if (!succeeded) {
                     try {
-                        displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, SurfaceControl.POWER_MODE_NORMAL);
-                        Log.i("UserService", "requestDisplayPower by int");
-                        succeeded = true;
+                        boolean result2 = displayManager.requestDisplayPower(Display.DEFAULT_DISPLAY, SurfaceControl.POWER_MODE_NORMAL);
+                        Log.i("UserService", "requestDisplayPower by int, result=" + result2);
+                        succeeded = result2;
                     } catch (Throwable e2) {
                         Log.e("UserService", "requestDisplayPower(int) also failed", e2);
                     }
@@ -138,9 +146,8 @@ public class UserService extends IUserService.Stub  {
             if (d == null) {
                 Log.i("UserService", "Could not get built-in display");
             } else {
-                SurfaceControl.setDisplayPowerMode(d, powerMode);
-                Log.i("UserService", "setDisplayPowerMode fallback success");
-                succeeded = true;
+                succeeded = SurfaceControl.setDisplayPowerMode(d, powerMode);
+                Log.i("UserService", "setDisplayPowerMode fallback success=" + succeeded);
             }
         }
         if (!succeeded) {
@@ -149,13 +156,18 @@ public class UserService extends IUserService.Stub  {
     }
 
     public void startListenVolumeKey() throws RemoteException {
-        if (listenVolumeKey) {
-            Log.i("UserService", "startListenVolumeKey: already listening");
+        if (listenVolumeKey && keepScreenOff && screenOffLoopThread != null && screenOffLoopThread.isAlive()) {
+            Log.i("UserService", "startListenVolumeKey: already listening and loop is running");
             return;
         }
         Log.i("UserService", "startListenVolumeKey: starting volume key listener");
         listenVolumeKey = true;
-        
+        keepScreenOff = true;
+        disableStayOnWhilePlugged();
+
+        // 启动保持熄屏循环线程（先启动，确保即使音量键监听失败也能保持熄屏）
+        startKeepScreenOffLoop();
+
         // 启动音量键监听线程
         Thread thread = new Thread(() -> {
             try {
@@ -170,6 +182,9 @@ public class UserService extends IUserService.Stub  {
                     if (!line.endsWith("0000 0000 00000000") &&
                         (line.endsWith("0001 0072 00000001") || line.endsWith("0001 0073 00000001"))) {
                         Log.i("UserService", "volume key pressed, exiting pure black activity");
+                        keepScreenOff = false;
+                        listenVolumeKey = false;
+                        restoreStayOnWhilePlugged();
                         setScreenPower(SurfaceControl.POWER_MODE_NORMAL);
                         if (context != null) {
                             Intent intent = new Intent("com.gitee.connect_screen.EXIT_PURE_BLACK");
@@ -178,6 +193,7 @@ public class UserService extends IUserService.Stub  {
                         } else {
                             Log.i("UserService", "context is null, can not send EXIT_PURE_BLACK");
                         }
+                        break;
                     }
                 }
                 reader.close();
@@ -196,10 +212,109 @@ public class UserService extends IUserService.Stub  {
         thread.start();
     }
 
+    private void startKeepScreenOffLoop() {
+        if (screenOffLoopThread != null && screenOffLoopThread.isAlive()) {
+            return;
+        }
+        screenOffLoopThread = new Thread(() -> {
+            Log.i("UserService", "keep screen off loop started");
+            while (keepScreenOff) {
+                try {
+                    // 只有屏幕实际处于亮起状态时才重新熄屏，避免与系统电源管理冲突
+                    if (isDefaultDisplayOn()) {
+                        setScreenPower(SurfaceControl.POWER_MODE_OFF);
+                    }
+                    Thread.sleep(SCREEN_OFF_CHECK_INTERVAL);
+                } catch (InterruptedException e) {
+                    Log.i("UserService", "keep screen off loop interrupted");
+                    break;
+                } catch (Throwable e) {
+                    // 捕获所有异常，防止循环线程崩溃
+                    Log.e("UserService", "keep screen off loop error, continuing...", e);
+                    try {
+                        Thread.sleep(SCREEN_OFF_CHECK_INTERVAL);
+                    } catch (InterruptedException ie) {
+                        Log.i("UserService", "keep screen off loop interrupted during error recovery");
+                        break;
+                    }
+                }
+            }
+            Log.i("UserService", "keep screen off loop stopped");
+        });
+        screenOffLoopThread.start();
+    }
+
+    private boolean isDefaultDisplayOn() {
+        try {
+            if (context == null) {
+                return true;
+            }
+            android.hardware.display.DisplayManager dm =
+                    (android.hardware.display.DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+            if (dm == null) {
+                return true;
+            }
+            android.view.Display d = dm.getDisplay(Display.DEFAULT_DISPLAY);
+            if (d == null) {
+                return true;
+            }
+            int state = d.getState();
+            Log.d("UserService", "isDefaultDisplayOn: state=" + state);
+            return state != android.view.Display.STATE_OFF
+                    && state != android.view.Display.STATE_DOZE
+                    && state != android.view.Display.STATE_DOZE_SUSPEND;
+        } catch (Throwable e) {
+            return true;
+        }
+    }
+
+    private void disableStayOnWhilePlugged() {
+        if (savedStayOnWhilePluggedIn != -1) {
+            return;
+        }
+        try {
+            savedStayOnWhilePluggedIn = android.provider.Settings.Global.getInt(
+                    context.getContentResolver(), "stay_on_while_plugged_in", 0);
+            android.provider.Settings.Global.putInt(
+                    context.getContentResolver(), "stay_on_while_plugged_in", 0);
+            Log.i("UserService", "disabled stay_on_while_plugged_in, previous=" + savedStayOnWhilePluggedIn);
+        } catch (Throwable e) {
+            Log.e("UserService", "disable stay_on_while_plugged_in failed", e);
+            savedStayOnWhilePluggedIn = -1;
+        }
+    }
+
+    private void restoreStayOnWhilePlugged() {
+        if (savedStayOnWhilePluggedIn == -1) {
+            return;
+        }
+        try {
+            android.provider.Settings.Global.putInt(
+                    context.getContentResolver(), "stay_on_while_plugged_in", savedStayOnWhilePluggedIn);
+            Log.i("UserService", "restored stay_on_while_plugged_in=" + savedStayOnWhilePluggedIn);
+        } catch (Throwable e) {
+            Log.e("UserService", "restore stay_on_while_plugged_in failed", e);
+        }
+        savedStayOnWhilePluggedIn = -1;
+    }
+
     public void stopListenVolumeKey() {
         Log.i("UserService", "stopListenVolumeKey called");
         listenVolumeKey = false;
-        
+        keepScreenOff = false;
+        restoreStayOnWhilePlugged();
+
+        // 停止保持熄屏循环线程
+        if (screenOffLoopThread != null) {
+            screenOffLoopThread.interrupt();
+            try {
+                screenOffLoopThread.join(1000);
+            } catch (InterruptedException e) {
+                Log.e("UserService", "join screenOffLoopThread failed", e);
+            }
+            screenOffLoopThread = null;
+        }
+
         // 停止音量键监听进程和线程
         if (listenVolumeKeyProcess != null) {
             if (android.os.Build.VERSION.SDK_INT >= 26) {
@@ -216,7 +331,7 @@ public class UserService extends IUserService.Stub  {
     }
 
     public boolean isLoopActive() {
-        return listenVolumeKey;
+        return keepScreenOff;
     }
 
     public void goToSleep() {

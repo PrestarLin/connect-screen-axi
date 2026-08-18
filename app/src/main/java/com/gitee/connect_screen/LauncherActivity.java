@@ -1,6 +1,5 @@
 package com.gitee.connect_screen;
 
-import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -141,9 +140,7 @@ public class LauncherActivity extends AppCompatActivity {
 
         // 添加模拟熄屏按钮的点击监听器
         findViewById(R.id.btn_screen_off).setOnClickListener(v -> {
-            Intent intent = new Intent(this, PureBlackActivity.class);
-            ActivityOptions options = ActivityOptions.makeBasic();
-            startActivity(intent, options.toBundle());
+            PureBlackActivity.triggerScreenOff(this);
         });
     }
     private void updateFloatingBackButtonText(boolean isEnabled) {

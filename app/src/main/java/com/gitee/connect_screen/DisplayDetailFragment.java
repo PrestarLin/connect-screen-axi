@@ -3,7 +3,6 @@ package com.gitee.connect_screen;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.app.Activity;
-import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -315,10 +314,7 @@ public class DisplayDetailFragment extends Fragment {
             realScreenOffBtn.setVisibility(View.VISIBLE);
             wakeKeyBtn.setVisibility(View.VISIBLE);
             realScreenOffBtn.setOnClickListener(v -> {
-                Intent intent = new Intent(getContext(), PureBlackActivity.class);
-                intent.putExtra("force_real_screen_off", true);
-                ActivityOptions options = ActivityOptions.makeBasic();
-                startActivity(intent, options.toBundle());
+                PureBlackActivity.startRealScreenOff(requireContext());
             });
             String[] keys = {"音量上", "音量下", "电源键"};
             final int[] keyValues = {android.view.KeyEvent.KEYCODE_VOLUME_UP,

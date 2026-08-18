@@ -1,5 +1,6 @@
 package com.gitee.connect_screen;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.IBinder;
 import android.content.Intent;
@@ -43,6 +44,55 @@ import java.util.Set;
 
 public class PureBlackActivity extends AppCompatActivity {
     private static final String EXTRA_FORCE_REAL = "force_real_screen_off";
+
+    /**
+     * 首页/触控板统一的熄屏入口：勾选“使用真实熄屏”时直接关闭屏幕（不启动黑色遮罩 Activity），
+     * 否则使用黑色遮罩模拟熄屏。
+     */
+    public static void triggerScreenOff(Context context) {
+        boolean useReal = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                .getBoolean("use_real_screen_off", false);
+        if (useReal) {
+            startRealScreenOff(context);
+        } else {
+            Intent intent = new Intent(context, PureBlackActivity.class);
+            if (!(context instanceof Activity)) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
+        }
+    }
+
+    /**
+     * 直接进行真实熄屏（不启动 PureBlackActivity）：
+     * 绑定 userService 并循环保持熄屏，直到音量键退出。
+     */
+    public static void startRealScreenOff(Context context) {
+        if (ShizukuUtils.hasPermission() && State.userService != null) {
+            try {
+                State.log("真实熄屏：直接调用 UserService");
+                State.userService.startListenVolumeKey();
+                String method = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                        .getString("real_screen_off_method", "display_power");
+                if ("system_lock".equals(method)) {
+                    State.userService.goToSleep();
+                } else {
+                    State.userService.setScreenPower(SurfaceControl.POWER_MODE_OFF);
+                }
+                return;
+            } catch (RemoteException e) {
+                State.log("真实熄屏失败，回退到 PureBlackActivity: " + e.getMessage());
+            }
+        }
+        // 回退：启动 PureBlackActivity（内部会绑定 userService 并尝试真实熄屏）
+        Intent intent = new Intent(context, PureBlackActivity.class);
+        intent.putExtra(EXTRA_FORCE_REAL, true);
+        if (!(context instanceof Activity)) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        context.startActivity(intent);
+    }
+
     // 添加 Set 来存储外部设备 ID
     private final Set<Integer> externalDeviceIds = new HashSet<>();
     private final boolean hasShizukuPermission = ShizukuUtils.hasPermission();
