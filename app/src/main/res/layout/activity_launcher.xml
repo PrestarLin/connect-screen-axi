@@ -24,38 +24,42 @@
         android:orientation="horizontal"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
+        android:paddingTop="4dp"
         android:paddingBottom="4dp">
 
         <Button
             android:id="@+id/floating_button_toggle"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="36dp"
             android:layout_marginEnd="8dp"
             android:minWidth="0dp"
-            android:textSize="12sp"
+            android:paddingHorizontal="12dp"
+            android:textSize="13sp"
             android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_touchpad"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="36dp"
             android:layout_marginEnd="8dp"
             android:minWidth="0dp"
+            android:paddingHorizontal="12dp"
             android:text="触控板"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_screen_off"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="36dp"
             android:layout_marginEnd="8dp"
             android:minWidth="0dp"
+            android:paddingHorizontal="12dp"
             android:text="模拟熄屏"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
 
         <ImageButton
             android:id="@+id/menu_button"

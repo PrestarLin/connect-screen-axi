@@ -61,44 +61,51 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:orientation="horizontal"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
         android:paddingTop="16dp"
-        android:paddingBottom="0dp"
+        android:paddingBottom="16dp"
         android:weightSum="3">
 
         <ImageButton
             android:id="@+id/backButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
             android:layout_margin="8dp"
             android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/icon_button_bg"
             android:contentDescription="@string/back_button"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_back"
+            android:padding="12dp"
             app:tint="@color/md_on_surface" />
 
         <ImageButton
             android:id="@+id/homeButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
             android:layout_margin="8dp"
             android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/icon_button_bg"
             android:contentDescription="@string/home_button"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_home"
+            android:padding="12dp"
             app:tint="@color/md_on_surface" />
 
         <ImageButton
             android:id="@+id/goDarkButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
             android:layout_margin="8dp"
             android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/icon_button_bg"
             android:contentDescription="@string/go_dark_button"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_dark_mode"
+            android:padding="12dp"
             app:tint="@color/md_on_surface" />
 
     </LinearLayout>
