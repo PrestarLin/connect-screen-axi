@@ -138,9 +138,10 @@ public class LauncherActivity extends AppCompatActivity {
         );
         recyclerView.setAdapter(adapter);
 
-        // 添加模拟熄屏按钮的点击监听器
+        // 添加模拟熄屏按钮的点击监听器（始终走黑色遮罩 Activity，不受真实熄屏设置影响）
         findViewById(R.id.btn_screen_off).setOnClickListener(v -> {
-            PureBlackActivity.triggerScreenOff(this);
+            Intent intent = new Intent(this, PureBlackActivity.class);
+            startActivity(intent);
         });
     }
     private void updateFloatingBackButtonText(boolean isEnabled) {
