@@ -220,28 +220,21 @@ public class UserService extends IUserService.Stub  {
     }
 
     public void goToSleep() {
-        Log.i("UserService", "goToSleep: executing input keyevent 26");
+        Log.i("UserService", "goToSleep: injecting KEYCODE_POWER");
         try {
-            Runtime.getRuntime().exec("input keyevent 26");
-            Log.i("UserService", "goToSleep: input keyevent 26 executed");
+            android.hardware.input.IInputManager inputManager =
+                    android.hardware.input.IInputManager.Stub.asInterface(
+                            SystemServiceHelper.getSystemService(Context.INPUT_SERVICE));
+            long now = android.os.SystemClock.uptimeMillis();
+            android.view.KeyEvent down = new android.view.KeyEvent(now, now,
+                    android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_POWER, 0);
+            android.view.KeyEvent up = new android.view.KeyEvent(now, now + 50,
+                    android.view.KeyEvent.ACTION_UP, android.view.KeyEvent.KEYCODE_POWER, 0);
+            inputManager.injectInputEvent(down, 0);
+            inputManager.injectInputEvent(up, 0);
+            Log.i("UserService", "goToSleep: power key injected");
         } catch (Throwable e) {
-            Log.e("UserService", "goToSleep via input keyevent failed", e);
-            // 回退到注入 KEYCODE_POWER
-            try {
-                android.hardware.input.IInputManager inputManager =
-                        android.hardware.input.IInputManager.Stub.asInterface(
-                                SystemServiceHelper.getSystemService(Context.INPUT_SERVICE));
-                long now = android.os.SystemClock.uptimeMillis();
-                android.view.KeyEvent down = new android.view.KeyEvent(now, now,
-                        android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_POWER, 0);
-                android.view.KeyEvent up = new android.view.KeyEvent(now, now + 50,
-                        android.view.KeyEvent.ACTION_UP, android.view.KeyEvent.KEYCODE_POWER, 0);
-                inputManager.injectInputEvent(down, 0);
-                inputManager.injectInputEvent(up, 0);
-                Log.i("UserService", "goToSleep: power key injected fallback");
-            } catch (Throwable e2) {
-                Log.e("UserService", "goToSleep fallback also failed", e2);
-            }
+            Log.e("UserService", "goToSleep failed", e);
         }
     }
 }
