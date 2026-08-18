@@ -314,7 +314,10 @@ public class DisplayDetailFragment extends Fragment {
             realScreenOffBtn.setVisibility(View.VISIBLE);
             wakeKeyBtn.setVisibility(View.VISIBLE);
             realScreenOffBtn.setOnClickListener(v -> {
-                PureBlackActivity.startRealScreenOff(requireContext());
+                // 启动 PureBlackActivity（内部会尝试真实熄屏，失败时也显示黑色遮罩给用户反馈）
+                Intent intent = new Intent(getContext(), PureBlackActivity.class);
+                intent.putExtra("force_real_screen_off", true);
+                startActivity(intent);
             });
             String[] keys = {"音量上", "音量下", "电源键"};
             final int[] keyValues = {android.view.KeyEvent.KEYCODE_VOLUME_UP,

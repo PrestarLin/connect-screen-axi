@@ -107,17 +107,32 @@ public final class SurfaceControl {
     }
 
     public static IBinder getBuiltInDisplay() {
-        try {
-            Method method = getGetBuiltInDisplayMethod();
-            if (Build.VERSION.SDK_INT < AndroidVersions.API_29_ANDROID_10) {
-                // call getBuiltInDisplay(0)
-                return (IBinder) method.invoke(null, 0);
+        // 1) 优先尝试 getInternalDisplayToken()（API 29+，AOSP 标准方法）
+        if (Build.VERSION.SDK_INT >= AndroidVersions.API_29_ANDROID_10) {
+            try {
+                Method method = CLASS.getMethod("getInternalDisplayToken");
+                return (IBinder) method.invoke(null);
+            } catch (NoSuchMethodException e) {
+                Log.w("SurfaceControl", "getInternalDisplayToken not found, trying getPhysicalDisplayToken");
+            } catch (ReflectiveOperationException e) {
+                Log.e("SurfaceControl", "getInternalDisplayToken failed", e);
             }
-
-            // call getInternalDisplayToken()
-            return (IBinder) method.invoke(null);
+            // 2) 兜底：getPhysicalDisplayToken(0)（Android 12+ 替代 API，在 ColorOS/OxygenOS 上可用）
+            try {
+                Method method = CLASS.getMethod("getPhysicalDisplayToken", long.class);
+                return (IBinder) method.invoke(null, 0L);
+            } catch (NoSuchMethodException e) {
+                Log.w("SurfaceControl", "getPhysicalDisplayToken not found");
+            } catch (ReflectiveOperationException e) {
+                Log.e("SurfaceControl", "getPhysicalDisplayToken failed", e);
+            }
+        }
+        // 3) 旧版 API：getBuiltInDisplay(int)（API < 29）
+        try {
+            Method method = CLASS.getMethod("getBuiltInDisplay", int.class);
+            return (IBinder) method.invoke(null, 0);
         } catch (ReflectiveOperationException e) {
-            Log.e("SurfaceControl", "Could not invoke method", e);
+            Log.e("SurfaceControl", "getBuiltInDisplay(int) failed", e);
             return null;
         }
     }
